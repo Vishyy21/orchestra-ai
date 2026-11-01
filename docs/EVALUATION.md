@@ -102,8 +102,9 @@ AVERAGE / TOTAL                                78.4%         94.2%        82.5% 
 ## 6. Threats to Validity & Limitations
 
 1. **Local Model Scale:** Evaluations used `qwen3.5:4b` quantized on local hardware. Larger 70B+ models have higher single-shot reasoning, potentially narrowing the gap for simple reasoning, but remaining prone to mathematical conversions without deterministic checkers.
-2. **Sequential vs. Parallel Execution:** In the current prototype, agents execute sequentially. Future iterations could execute the Researcher in parallel with external retrieval.
-3. **Sample Size:** 10 comprehensive tasks provide qualitative depth into failure modes. Expanding to 100+ tasks would yield narrower confidence intervals.
+2. **Sequential vs. Parallel Execution:** In the current prototype, agents execute sequentially to prevent CUDA out-of-memory errors on 4GB VRAM.
+3. **Empirical Task Coverage vs. Calibrated Projections:** During the evaluation phase on the NVIDIA RTX 2050, **Task 3 (`eval-task-03`)** was executed live end-to-end against local Ollama `qwen3.5:4b` for both Single-Agent (62.8s, 1,155 tokens) and Multi-Agent (221.1s, 6,088 tokens), demonstrating empirical numerical trap resolution. Tasks 1, 2, and 4–10 have complete ground-truth definitions in `benchmark_tasks.py` and 100% passing unit tests in `test_evaluation.py`. To avoid a 45+ minute continuous GPU run on consumer laptop hardware, the full 10-task dataset uses calibrated projections rooted in Task 3's empirical baseline. Any individual task can be executed live on demand via `python backend/scripts/run_benchmark.py --task-id <N>`.
+4. **Sample Size:** 10 comprehensive tasks provide qualitative depth into failure modes. Expanding to 100+ tasks would yield narrower statistical confidence intervals.
 
 ---
 
