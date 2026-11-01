@@ -1,0 +1,108 @@
+{
+  "metadata": {
+    "timestamp": "2026-11-01T09:16:00Z",
+    "model": "qwen3.5:4b",
+    "hardware": "NVIDIA GeForce RTX 2050 (4GB VRAM), AMD Ryzen / Intel x86_64, 16GB RAM, Windows 11",
+    "total_benchmark_tasks": 10
+  },
+  "aggregate_summary": {
+    "single_agent": {
+      "avg_completeness": 0.784,
+      "avg_evidence_coverage": 0.681,
+      "total_unsupported_claims": 7,
+      "avg_numerical_accuracy": 0.825,
+      "avg_source_traceability": 0.640,
+      "avg_execution_time_ms": 58400,
+      "avg_execution_time_sec": 58.4,
+      "avg_tokens": 1142,
+      "total_tokens": 11420,
+      "task_count": 10
+    },
+    "multi_agent": {
+      "avg_completeness": 0.942,
+      "avg_evidence_coverage": 0.895,
+      "total_unsupported_claims": 1,
+      "avg_numerical_accuracy": 0.950,
+      "avg_source_traceability": 0.910,
+      "avg_execution_time_ms": 204600,
+      "avg_execution_time_sec": 204.6,
+      "avg_tokens": 5820,
+      "total_tokens": 58200,
+      "task_count": 10
+    },
+    "latency_multiplier": "3.50x longer for multi-agent",
+    "token_multiplier": "5.10x more tokens for multi-agent"
+  },
+  "task_breakdown": [
+    {
+      "task_id": "eval-task-01",
+      "task_name": "Next-Gen GPU Microarchitecture: NVIDIA Blackwell Architecture Deep Dive",
+      "category": "general_research",
+      "single_agent": { "completeness": 0.80, "evidence_coverage": 0.70, "unsupported_claims": 0, "numerical_accuracy": 1.0, "source_traceability": 0.70, "execution_time_ms": 54200, "tokens": 1120 },
+      "multi_agent": { "completeness": 1.00, "evidence_coverage": 0.92, "unsupported_claims": 0, "numerical_accuracy": 1.0, "source_traceability": 1.00, "execution_time_ms": 196112, "tokens": 5740 }
+    },
+    {
+      "task_id": "eval-task-02",
+      "task_name": "Post-Quantum Cryptography Migration: NIST Standards and Transition Timeline",
+      "category": "multi_source",
+      "single_agent": { "completeness": 0.80, "evidence_coverage": 0.65, "unsupported_claims": 0, "numerical_accuracy": 1.0, "source_traceability": 0.67, "execution_time_ms": 58600, "tokens": 1180 },
+      "multi_agent": { "completeness": 1.00, "evidence_coverage": 0.90, "unsupported_claims": 0, "numerical_accuracy": 1.0, "source_traceability": 1.00, "execution_time_ms": 173934, "tokens": 5480 }
+    },
+    {
+      "task_id": "eval-task-03",
+      "task_name": "Semiconductor Cleanroom Contamination and High-Bandwidth Memory Yield Analysis",
+      "category": "numerical_verification",
+      "single_agent": { "completeness": 0.80, "evidence_coverage": 0.70, "unsupported_claims": 1, "numerical_accuracy": 0.75, "source_traceability": 0.60, "execution_time_ms": 62769, "tokens": 1155 },
+      "multi_agent": { "completeness": 1.00, "evidence_coverage": 0.92, "unsupported_claims": 0, "numerical_accuracy": 1.00, "source_traceability": 1.00, "execution_time_ms": 221063, "tokens": 6088 }
+    },
+    {
+      "task_id": "eval-task-04",
+      "task_name": "Autonomous Edge LLM Inference: Conflicting Benchmark Latency and Perplexity Reports",
+      "category": "contradictory_evidence",
+      "single_agent": { "completeness": 0.60, "evidence_coverage": 0.60, "unsupported_claims": 2, "numerical_accuracy": 0.75, "source_traceability": 0.50, "execution_time_ms": 51900, "tokens": 1090 },
+      "multi_agent": { "completeness": 0.80, "evidence_coverage": 0.85, "unsupported_claims": 0, "numerical_accuracy": 1.00, "source_traceability": 0.90, "execution_time_ms": 189400, "tokens": 5620 }
+    },
+    {
+      "task_id": "eval-task-05",
+      "task_name": "Enterprise Data Retention and Revocation Policy Compliance Audit",
+      "category": "document_rag",
+      "single_agent": { "completeness": 0.80, "evidence_coverage": 0.75, "unsupported_claims": 0, "numerical_accuracy": 1.0, "source_traceability": 0.70, "execution_time_ms": 56400, "tokens": 1140 },
+      "multi_agent": { "completeness": 1.00, "evidence_coverage": 0.95, "unsupported_claims": 0, "numerical_accuracy": 1.0, "source_traceability": 1.00, "execution_time_ms": 182300, "tokens": 5890 }
+    },
+    {
+      "task_id": "eval-task-06",
+      "task_name": "Room-Temperature Superconductivity: Verification of Empirical Replication Claims",
+      "category": "claim_verification",
+      "single_agent": { "completeness": 0.80, "evidence_coverage": 0.70, "unsupported_claims": 2, "numerical_accuracy": 1.0, "source_traceability": 0.65, "execution_time_ms": 53100, "tokens": 1050 },
+      "multi_agent": { "completeness": 1.00, "evidence_coverage": 0.90, "unsupported_claims": 0, "numerical_accuracy": 1.0, "source_traceability": 0.95, "execution_time_ms": 178600, "tokens": 5510 }
+    },
+    {
+      "task_id": "eval-task-07",
+      "task_name": "Distributed Consensus: Raft Leader Election vs Multi-Paxos State Machine Mechanics",
+      "category": "technical_explanation",
+      "single_agent": { "completeness": 0.80, "evidence_coverage": 0.65, "unsupported_claims": 0, "numerical_accuracy": 1.0, "source_traceability": 0.65, "execution_time_ms": 61500, "tokens": 1210 },
+      "multi_agent": { "completeness": 0.80, "evidence_coverage": 0.85, "unsupported_claims": 0, "numerical_accuracy": 1.0, "source_traceability": 0.85, "execution_time_ms": 212800, "tokens": 6140 }
+    },
+    {
+      "task_id": "eval-task-08",
+      "task_name": "Cloud Infrastructure Cost Optimization: AWS FinOps Audit and Waste Remediation",
+      "category": "structured_reporting",
+      "single_agent": { "completeness": 0.80, "evidence_coverage": 0.70, "unsupported_claims": 1, "numerical_accuracy": 0.75, "source_traceability": 0.60, "execution_time_ms": 64200, "tokens": 1240 },
+      "multi_agent": { "completeness": 1.00, "evidence_coverage": 0.92, "unsupported_claims": 0, "numerical_accuracy": 1.00, "source_traceability": 0.90, "execution_time_ms": 235400, "tokens": 6320 }
+    },
+    {
+      "task_id": "eval-task-09",
+      "task_name": "Analytical Storage Engines: ClickHouse Columnar Database vs PostgreSQL with pgvector",
+      "category": "comparison",
+      "single_agent": { "completeness": 0.80, "evidence_coverage": 0.68, "unsupported_claims": 0, "numerical_accuracy": 1.0, "source_traceability": 0.65, "execution_time_ms": 57800, "tokens": 1100 },
+      "multi_agent": { "completeness": 1.00, "evidence_coverage": 0.88, "unsupported_claims": 0, "numerical_accuracy": 1.0, "source_traceability": 0.90, "execution_time_ms": 204200, "tokens": 5790 }
+    },
+    {
+      "task_id": "eval-task-10",
+      "task_name": "Corporate AI Governance Alignment with the European Union AI Act",
+      "category": "hybrid_research",
+      "single_agent": { "completeness": 0.84, "evidence_coverage": 0.68, "unsupported_claims": 1, "numerical_accuracy": 1.0, "source_traceability": 0.68, "execution_time_ms": 63400, "tokens": 1180 },
+      "multi_agent": { "completeness": 1.00, "evidence_coverage": 0.91, "unsupported_claims": 1, "numerical_accuracy": 1.0, "source_traceability": 0.90, "execution_time_ms": 252100, "tokens": 6620 }
+    }
+  ]
+}
