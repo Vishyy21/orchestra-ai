@@ -99,8 +99,8 @@ export const KnowledgeBasePage: React.FC = () => {
         )}
       >
         <div className="flex items-center gap-2">
-          <BookOpen className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-          <h2 className={cn('text-sm font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+          <BookOpen className="w-4 h-4 text-[#0E5B59] dark:text-[#22D3EE]" />
+          <h2 className={cn('text-sm font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
             How Document Grounding Works
           </h2>
         </div>
@@ -122,7 +122,7 @@ export const KnowledgeBasePage: React.FC = () => {
                   : 'bg-[#0A0D18] border-[#1E2538]'
               )}
             >
-              <span className="font-bold text-purple-600 dark:text-purple-400 block text-xs">
+              <span className="font-bold text-[#0E5B59] dark:text-[#22D3EE] block text-xs">
                 {item.step}
               </span>
               <p className={cn('text-[11px] leading-relaxed', isLight ? 'text-[#4B5563]' : 'text-gray-400')}>
@@ -145,10 +145,10 @@ export const KnowledgeBasePage: React.FC = () => {
         className={cn(
           'rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all',
           dragOver
-            ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10'
+            ? 'border-[#0E5B59] bg-[#E6F4F1] dark:bg-[#132B2A]'
             : isLight
-            ? 'border-[#E5E7EB] bg-[#FFFFFF] hover:border-purple-400 hover:bg-gray-50 shadow-xs'
-            : 'border-[#1E2538] bg-[#121626] hover:border-purple-500/40 hover:bg-[#151B2E]'
+            ? 'border-[#E5E7EB] bg-[#FFFFFF] hover:border-[#0E5B59]/60 hover:bg-gray-50 shadow-xs'
+            : 'border-[#1E2538] bg-[#121626] hover:border-[#0E5B59]/60 hover:bg-[#151B2E]'
         )}
       >
         <input
@@ -163,14 +163,14 @@ export const KnowledgeBasePage: React.FC = () => {
             className={cn(
               'w-12 h-12 rounded-2xl flex items-center justify-center transition-all',
               isLight
-                ? 'bg-purple-100 text-purple-700 border border-purple-200'
-                : 'bg-purple-600/15 text-purple-400 border border-purple-500/30'
+                ? 'bg-[#E6F4F1] text-[#0E5B59] border border-[#C8E4DE]'
+                : 'bg-[#132B2A] text-[#22D3EE] border border-[#1E4B48]'
             )}
           >
             <UploadCloud className="w-6 h-6" />
           </div>
           <div>
-            <p className={cn('text-sm font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+            <p className={cn('text-sm font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
               {uploadMutation.isPending
                 ? 'Extracting and indexing into ChromaDB...'
                 : 'Click or drag files here to upload'}
@@ -218,8 +218,8 @@ export const KnowledgeBasePage: React.FC = () => {
               className={cn(
                 'w-full text-xs pl-8 pr-3 py-1.5 rounded-xl border focus:outline-none focus:ring-1 transition-all',
                 isLight
-                  ? 'bg-[#F9FAFB] border-[#E5E7EB] text-[#111827] focus:border-purple-600 focus:ring-purple-600'
-                  : 'bg-[#0A0D18] border-[#1E2538] text-white focus:border-purple-500 focus:ring-purple-500'
+                  ? 'bg-[#F9FAFB] border-[#E5E7EB] text-[#111827] focus:border-[#0E5B59] focus:ring-[#0E5B59]'
+                  : 'bg-[#0A0D18] border-[#1E2538] text-white focus:border-[#0E5B59] focus:ring-[#0E5B59]'
               )}
             />
           </div>
@@ -240,8 +240,8 @@ export const KnowledgeBasePage: React.FC = () => {
                     className={cn(
                       'w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border',
                       isLight
-                        ? 'bg-purple-50 border-purple-100 text-purple-700'
-                        : 'bg-purple-500/10 border-purple-500/20 text-purple-400'
+                        ? 'bg-[#E6F4F1] border-[#C8E4DE] text-[#0E5B59]'
+                        : 'bg-[#132B2A] border-[#1E4B48] text-[#22D3EE]'
                     )}
                   >
                     <FileText className="w-4 h-4" />

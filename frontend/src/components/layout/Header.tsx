@@ -34,7 +34,7 @@ export const Header: React.FC = () => {
       {/* Route Breadcrumb Context */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2 text-xs font-mono">
-          <Terminal className="w-4 h-4 text-[#8B5CF6]" />
+          <Terminal className="w-4 h-4 text-[#0E5B59] dark:text-[#22D3EE]" />
           <span className="text-[#64748B] hidden sm:inline">ORCHESTRA AI</span>
           <span className="text-[#475569] hidden sm:inline">/</span>
           <span className="text-[#F1F5F9] font-medium tracking-tight">
@@ -54,7 +54,7 @@ export const Header: React.FC = () => {
           variant="primary"
           size="sm"
           onClick={() => navigate('/new-task')}
-          className="bg-[#7C3AED] hover:bg-[#8B5CF6] text-white border border-[#A78BFA]/30 shadow-sm transition-all font-mono text-xs h-8 px-3"
+          className="bg-[#0E5B59] hover:bg-[#0A4543] text-white border border-[#14918E]/30 shadow-sm transition-all font-mono text-xs h-8 px-3"
         >
           <Plus className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">New Task</span>

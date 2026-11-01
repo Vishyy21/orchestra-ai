@@ -77,7 +77,7 @@ export const ApprovalsPage: React.FC = () => {
           onClick={() => setActiveTab('pending')}
           className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
             activeTab === 'pending'
-              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]'
+              ? 'bg-[#0E5B59] text-white shadow-xs'
               : 'bg-[#121626] border border-[#1E2538] text-gray-400 hover:text-white'
           }`}
         >
@@ -88,7 +88,7 @@ export const ApprovalsPage: React.FC = () => {
           onClick={() => setActiveTab('approved')}
           className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
             activeTab === 'approved'
-              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]'
+              ? 'bg-[#0E5B59] text-white shadow-xs'
               : 'bg-[#121626] border border-[#1E2538] text-gray-400 hover:text-white'
           }`}
         >
@@ -99,7 +99,7 @@ export const ApprovalsPage: React.FC = () => {
           onClick={() => setActiveTab('rejected')}
           className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
             activeTab === 'rejected'
-              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]'
+              ? 'bg-[#0E5B59] text-white shadow-xs'
               : 'bg-[#121626] border border-[#1E2538] text-gray-400 hover:text-white'
           }`}
         >
@@ -173,7 +173,7 @@ export const ApprovalsPage: React.FC = () => {
 
                 {/* Right 1 col: Translucent Document Icon */}
                 <div className="hidden md:flex items-center justify-center">
-                  <div className="w-24 h-24 rounded-2xl bg-purple-500/5 border border-purple-500/20 flex items-center justify-center text-purple-400 shadow-inner">
+                  <div className="w-24 h-24 rounded-2xl bg-[#0E5B59]/10 border border-[#0E5B59]/20 flex items-center justify-center text-[#0E5B59] dark:text-[#22D3EE] shadow-inner">
                     <FileText className="w-10 h-10 opacity-70" />
                   </div>
                 </div>
@@ -205,7 +205,7 @@ export const ApprovalsPage: React.FC = () => {
                       })
                     }
                     disabled={decideMutation.isPending}
-                    className="px-5 py-2 rounded-lg bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] hover:from-[#8B5CF6] hover:to-[#6366F1] text-white text-xs font-medium shadow-[0_0_15px_rgba(124,58,237,0.4)] transition-all flex items-center gap-1.5"
+                    className="px-5 py-2 rounded-lg bg-[#0E5B59] hover:bg-[#0A4543] text-white text-xs font-medium shadow-xs transition-all flex items-center gap-1.5"
                   >
                     <Check className="w-3.5 h-3.5" />
                     <span>Approve & Continue</span>

@@ -13,19 +13,19 @@ export const WaveGraphic: React.FC<WaveGraphicProps> = ({ className = '', varian
           viewBox="0 0 300 100"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="w-full h-full object-cover filter drop-shadow-[0_0_12px_rgba(168,85,247,0.5)]"
+          className="w-full h-full object-cover filter drop-shadow-[0_0_12px_rgba(14,91,89,0.35)]"
         >
           <defs>
             <linearGradient id="cardWave1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.4" />
-              <stop offset="40%" stopColor="#818CF8" stopOpacity="0.8" />
-              <stop offset="70%" stopColor="#A855F7" stopOpacity="0.9" />
-              <stop offset="100%" stopColor="#EC4899" stopOpacity="0.6" />
+              <stop offset="0%" stopColor="#0E5B59" stopOpacity="0.8" />
+              <stop offset="40%" stopColor="#286D78" stopOpacity="0.9" />
+              <stop offset="70%" stopColor="#14B8A6" stopOpacity="0.7" />
+              <stop offset="100%" stopColor="#C5A46D" stopOpacity="0.5" />
             </linearGradient>
             <linearGradient id="cardWave2" x1="100%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#A855F7" stopOpacity="0.8" />
-              <stop offset="50%" stopColor="#6366F1" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#06B6D4" stopOpacity="0.3" />
+              <stop offset="0%" stopColor="#C5A46D" stopOpacity="0.7" />
+              <stop offset="50%" stopColor="#286D78" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#0E5B59" stopOpacity="0.4" />
             </linearGradient>
             <filter id="cardGlow" x="-20%" y="-20%" width="140%" height="140%">
               <feGaussianBlur stdDeviation="3" result="blur" />
@@ -70,11 +70,11 @@ export const WaveGraphic: React.FC<WaveGraphicProps> = ({ className = '', varian
         >
           <defs>
             <linearGradient id="conduitGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#10B981" stopOpacity="0.3" />
-              <stop offset="25%" stopColor="#06B6D4" stopOpacity="0.5" />
-              <stop offset="50%" stopColor="#A855F7" stopOpacity="0.9" />
-              <stop offset="75%" stopColor="#EC4899" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#6366F1" stopOpacity="0.2" />
+              <stop offset="0%" stopColor="#21845A" stopOpacity="0.3" />
+              <stop offset="25%" stopColor="#0E5B59" stopOpacity="0.6" />
+              <stop offset="50%" stopColor="#286D78" stopOpacity="0.8" />
+              <stop offset="75%" stopColor="#C5A46D" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#14B8A6" stopOpacity="0.3" />
             </linearGradient>
             <filter id="conduitGlow">
               <feGaussianBlur stdDeviation="4" result="blur" />
@@ -102,37 +102,37 @@ export const WaveGraphic: React.FC<WaveGraphicProps> = ({ className = '', varian
     );
   }
 
-  // Hero variant - rich multi-strand flowing 3D glowing ribbon wave
+  // Hero variant - rich multi-strand flowing 3D glowing ribbon wave in teal/champagne
   return (
     <div className={`relative overflow-hidden ${className}`}>
       <svg
         viewBox="0 0 600 320"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-full filter drop-shadow-[0_0_25px_rgba(168,85,247,0.45)]"
+        className="w-full h-full filter drop-shadow-[0_0_20px_rgba(14,91,89,0.3)]"
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>
           <linearGradient id="heroRibbon1" x1="0%" y1="80%" x2="100%" y2="20%">
-            <stop offset="0%" stopColor="#06B6D4" stopOpacity="0.1" />
-            <stop offset="30%" stopColor="#3B82F6" stopOpacity="0.6" />
-            <stop offset="60%" stopColor="#A855F7" stopOpacity="0.9" />
-            <stop offset="85%" stopColor="#EC4899" stopOpacity="0.9" />
-            <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0.4" />
+            <stop offset="0%" stopColor="#0E5B59" stopOpacity="0.2" />
+            <stop offset="30%" stopColor="#286D78" stopOpacity="0.7" />
+            <stop offset="60%" stopColor="#14B8A6" stopOpacity="0.85" />
+            <stop offset="85%" stopColor="#C5A46D" stopOpacity="0.75" />
+            <stop offset="100%" stopColor="#0E5B59" stopOpacity="0.4" />
           </linearGradient>
           <linearGradient id="heroRibbon2" x1="10%" y1="100%" x2="90%" y2="0%">
-            <stop offset="0%" stopColor="#6366F1" stopOpacity="0.3" />
-            <stop offset="45%" stopColor="#A855F7" stopOpacity="0.8" />
-            <stop offset="80%" stopColor="#F43F5E" stopOpacity="0.7" />
-            <stop offset="100%" stopColor="#38BDF8" stopOpacity="0.2" />
+            <stop offset="0%" stopColor="#286D78" stopOpacity="0.3" />
+            <stop offset="45%" stopColor="#0E5B59" stopOpacity="0.8" />
+            <stop offset="80%" stopColor="#C5A46D" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#14B8A6" stopOpacity="0.3" />
           </linearGradient>
           <linearGradient id="heroMeshFill" x1="20%" y1="100%" x2="80%" y2="10%">
-            <stop offset="0%" stopColor="#7C3AED" stopOpacity="0.02" />
-            <stop offset="50%" stopColor="#C084FC" stopOpacity="0.08" />
-            <stop offset="100%" stopColor="#EC4899" stopOpacity="0.01" />
+            <stop offset="0%" stopColor="#0E5B59" stopOpacity="0.03" />
+            <stop offset="50%" stopColor="#286D78" stopOpacity="0.06" />
+            <stop offset="100%" stopColor="#C5A46D" stopOpacity="0.02" />
           </linearGradient>
           <filter id="heroGlow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="6" result="blur1" />
+            <feGaussianBlur stdDeviation="5" result="blur1" />
             <feGaussianBlur stdDeviation="2" result="blur2" />
             <feMerge>
               <feMergeNode in="blur1" />
@@ -143,8 +143,8 @@ export const WaveGraphic: React.FC<WaveGraphicProps> = ({ className = '', varian
         </defs>
 
         {/* Ambient background glow orb */}
-        <circle cx="340" cy="160" r="120" fill="#7C3AED" opacity="0.15" filter="blur(50px)" />
-        <circle cx="460" cy="140" r="90" fill="#EC4899" opacity="0.12" filter="blur(40px)" />
+        <circle cx="340" cy="160" r="120" fill="#0E5B59" opacity="0.1" filter="blur(50px)" />
+        <circle cx="460" cy="140" r="90" fill="#286D78" opacity="0.08" filter="blur(40px)" />
 
         {/* Shaded mesh ribbon between primary curves */}
         <path
@@ -156,14 +156,14 @@ export const WaveGraphic: React.FC<WaveGraphicProps> = ({ className = '', varian
         <path
           d="M 30 230 C 130 270, 210 110, 320 170 C 430 230, 510 90, 580 130"
           stroke="url(#heroRibbon1)"
-          strokeWidth="4"
+          strokeWidth="3.5"
           strokeLinecap="round"
           filter="url(#heroGlow)"
         />
         <path
           d="M 50 215 C 150 250, 230 130, 330 190 C 430 250, 490 120, 570 150"
           stroke="url(#heroRibbon2)"
-          strokeWidth="2.5"
+          strokeWidth="2.2"
           strokeLinecap="round"
           opacity="0.85"
         />

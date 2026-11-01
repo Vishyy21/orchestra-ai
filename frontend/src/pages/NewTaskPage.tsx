@@ -96,7 +96,7 @@ export const NewTaskPage: React.FC = () => {
       role: 'Understands the task',
       description: 'Decomposes the objective into tactical analytical steps and sets research boundaries.',
       icon: FileText,
-      color: 'text-purple-600 dark:text-purple-400',
+      color: 'text-[#0E5B59] dark:text-[#22D3EE]',
     },
     {
       id: 'researcher',
@@ -105,7 +105,7 @@ export const NewTaskPage: React.FC = () => {
       role: 'Retrieves web & document evidence',
       description: 'Performs semantic RAG retrieval from ChromaDB and live web grounding via Tavily.',
       icon: Search,
-      color: 'text-blue-600 dark:text-cyan-400',
+      color: 'text-[#286D78] dark:text-[#388B97]',
     },
     {
       id: 'analyst',
@@ -114,7 +114,7 @@ export const NewTaskPage: React.FC = () => {
       role: 'Synthesizes findings',
       description: 'Extracts core quantitative metrics, correlates facts, and synthesizes analytical findings.',
       icon: BarChart3,
-      color: 'text-indigo-600 dark:text-indigo-400',
+      color: 'text-[#0E5B59] dark:text-[#22D3EE]',
     },
     {
       id: 'verifier',
@@ -123,7 +123,7 @@ export const NewTaskPage: React.FC = () => {
       role: 'Checks claims & numerical consistency',
       description: 'Performs automated mathematical verification and guards against model hallucinations.',
       icon: ShieldCheck,
-      color: 'text-emerald-600 dark:text-emerald-400',
+      color: 'text-[#21845A] dark:text-[#34D399]',
     },
     {
       id: 'reporter',
@@ -132,7 +132,7 @@ export const NewTaskPage: React.FC = () => {
       role: 'Generates final report',
       description: 'Compiles clean executive Markdown briefings complete with formal source citations.',
       icon: FileText,
-      color: 'text-purple-600 dark:text-purple-400',
+      color: 'text-[#0E5B59] dark:text-[#22D3EE]',
     },
   ];
 
@@ -184,10 +184,10 @@ export const NewTaskPage: React.FC = () => {
                 }}
                 placeholder="HBM Market Landscape and Supply Chain Analysis"
                 className={cn(
-                  'w-full px-3.5 py-2.5 rounded-xl border text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all',
+                  'w-full px-3.5 py-2.5 rounded-xl border text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#0E5B59]/20 transition-all',
                   isLight
-                    ? 'bg-[#F9FAFB] border-[#E5E7EB] text-[#111827] placeholder-gray-400 focus:border-purple-600'
-                    : 'bg-[#0A0D18] border-[#1E2538] text-white placeholder-gray-500 focus:border-purple-500',
+                    ? 'bg-[#F9FAFB] border-[#E5E7EB] text-[#111827] placeholder-gray-400 focus:border-[#0E5B59]'
+                    : 'bg-[#0A0D18] border-[#1E2538] text-white placeholder-gray-500 focus:border-[#0E5B59]',
                   validationErrors.title && 'border-rose-500'
                 )}
               />
@@ -213,10 +213,10 @@ export const NewTaskPage: React.FC = () => {
                 rows={5}
                 placeholder="Analyze the current HBM market, key players, yield trends, and supply chain risks with supporting evidence from recent sources."
                 className={cn(
-                  'w-full px-3.5 py-2.5 rounded-xl border text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all resize-none',
+                  'w-full px-3.5 py-2.5 rounded-xl border text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#0E5B59]/20 transition-all resize-none',
                   isLight
-                    ? 'bg-[#F9FAFB] border-[#E5E7EB] text-[#111827] placeholder-gray-400 focus:border-purple-600'
-                    : 'bg-[#0A0D18] border-[#1E2538] text-white placeholder-gray-500 focus:border-purple-500',
+                    ? 'bg-[#F9FAFB] border-[#E5E7EB] text-[#111827] placeholder-gray-400 focus:border-[#0E5B59]'
+                    : 'bg-[#0A0D18] border-[#1E2538] text-white placeholder-gray-500 focus:border-[#0E5B59]',
                   validationErrors.description && 'border-rose-500'
                 )}
               />
@@ -238,10 +238,10 @@ export const NewTaskPage: React.FC = () => {
                   value={selectedDocId}
                   onChange={(e) => setSelectedDocId(e.target.value)}
                   className={cn(
-                    'w-full px-3.5 py-2.5 rounded-xl border text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all appearance-none cursor-pointer',
+                    'w-full px-3.5 py-2.5 rounded-xl border text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#0E5B59]/20 transition-all appearance-none cursor-pointer',
                     isLight
-                      ? 'bg-[#F9FAFB] border-[#E5E7EB] text-[#111827] focus:border-purple-600'
-                      : 'bg-[#0A0D18] border-[#1E2538] text-white focus:border-purple-500'
+                      ? 'bg-[#F9FAFB] border-[#E5E7EB] text-[#111827] focus:border-[#0E5B59]'
+                      : 'bg-[#0A0D18] border-[#1E2538] text-white focus:border-[#0E5B59]'
                   )}
                 >
                   <option value="">No Knowledge Base (Open Web Research)</option>
@@ -261,11 +261,11 @@ export const NewTaskPage: React.FC = () => {
                 className={cn(
                   'p-3.5 rounded-xl border text-[11px] leading-relaxed space-y-2 transition-colors',
                   isLight
-                    ? 'bg-purple-50/60 border-purple-100 text-[#4B5563]'
-                    : 'bg-[#0E1220] border-[#1E2538] text-gray-300'
+                    ? 'bg-[#E6F4F1] border-[#C8E4DE] text-[#172321]'
+                    : 'bg-[#132B2A] border-[#1E4B48] text-gray-200'
                 )}
               >
-                <div className="flex items-center gap-1.5 font-bold text-purple-700 dark:text-purple-300 text-xs">
+                <div className="flex items-center gap-1.5 font-bold text-[#0E5B59] dark:text-[#22D3EE] text-xs">
                   <Info className="w-3.5 h-3.5" />
                   <span>Knowledge Base Guidance</span>
                 </div>
@@ -312,7 +312,7 @@ export const NewTaskPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={mutation.isPending}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-semibold shadow-sm flex items-center gap-2 transition-all disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl bg-[#0E5B59] hover:bg-[#0A4543] text-white text-xs font-semibold shadow-sm flex items-center gap-2 transition-all disabled:opacity-50"
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
                 <span>{mutation.isPending ? 'Dispatching...' : 'Create Task'}</span>
@@ -326,18 +326,18 @@ export const NewTaskPage: React.FC = () => {
           className={cn(
             'lg:col-span-5 rounded-2xl border p-6 space-y-5 shadow-xs transition-all',
             isLight
-              ? 'bg-[#FFFFFF] border-[#EAEAE7]'
-              : 'bg-[#121626] border-[#1E2538]'
+              ? 'bg-[#FFFFFF] border-[#E4E7E0]'
+              : 'bg-[#131920] border-[#1F2A37]'
           )}
         >
-          <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-[#1E2538]">
+          <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-[#1F2A37]">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-              <h3 className={cn('text-sm font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+              <Sparkles className="w-4 h-4 text-[#0E5B59] dark:text-[#22D3EE]" />
+              <h3 className={cn('text-sm font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
                 Autonomous Workflow
               </h3>
             </div>
-            <span className="text-[10px] font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 px-2 py-0.5 rounded-full">
+            <span className="text-[10px] font-semibold text-[#0E5B59] dark:text-[#22D3EE] bg-[#E6F4F1] dark:bg-[#132B2A] px-2 py-0.5 rounded-full border border-[#C8E4DE] dark:border-[#1E4B48]">
               5 Steps
             </span>
           </div>
@@ -348,7 +348,7 @@ export const NewTaskPage: React.FC = () => {
             <div
               className={cn(
                 'absolute left-5 top-3 bottom-3 w-0.5 pointer-events-none transition-colors duration-300',
-                isLight ? 'bg-purple-200' : 'bg-[#1E2538]'
+                isLight ? 'bg-[#E4E7E0]' : 'bg-[#1F2A37]'
               )}
             />
 
@@ -365,8 +365,8 @@ export const NewTaskPage: React.FC = () => {
                     'p-3 rounded-xl border transition-all duration-200 relative z-10 cursor-pointer',
                     isHovered
                       ? isLight
-                        ? 'bg-purple-50/80 border-purple-300 shadow-sm transform -translate-x-0.5'
-                        : 'bg-[#1A1833] border-purple-500/50 shadow-md transform -translate-x-0.5'
+                        ? 'bg-[#E6F4F1] border-[#C8E4DE] shadow-xs transform -translate-x-0.5'
+                        : 'bg-[#132B2A] border-[#1E4B48] shadow-md transform -translate-x-0.5'
                       : isLight
                       ? 'bg-[#F9FAFB] border-[#E5E7EB]'
                       : 'bg-[#0E1220] border-[#1E2538]'
@@ -377,7 +377,7 @@ export const NewTaskPage: React.FC = () => {
                       className={cn(
                         'w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-all',
                         isHovered
-                          ? 'bg-purple-600 text-white border-purple-600 shadow-xs'
+                          ? 'bg-[#0E5B59] text-white border-[#0E5B59] shadow-xs'
                           : isLight
                           ? 'bg-white border-[#E5E7EB]'
                           : 'bg-[#121626] border-[#1E2538]'

@@ -9,7 +9,7 @@ import {
   Database,
   FileText,
   Settings,
-  Sparkles,
+  Layers,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -37,8 +37,8 @@ export const Sidebar: React.FC = () => {
       className={cn(
         'w-64 border-r flex flex-col justify-between p-4 shrink-0 hidden md:flex select-none transition-colors duration-200',
         isLight
-          ? 'bg-[#FAF9F6] border-[#EAEAE7] text-[#111827]'
-          : 'bg-[#0B0D14] border-[#1E2538] text-white'
+          ? 'bg-[#F7F6F1] border-[#E4E7E0] text-[#172321]'
+          : 'bg-[#0C1015] border-[#1F2A37] text-white'
       )}
     >
       <div className="space-y-6">
@@ -46,27 +46,27 @@ export const Sidebar: React.FC = () => {
         <div className="flex items-center gap-3 px-2 pt-2">
           <div
             className={cn(
-              'w-10 h-10 rounded-xl flex items-center justify-center p-2 shadow-sm transition-all',
+              'w-10 h-10 rounded-xl flex items-center justify-center p-2 shadow-xs transition-all',
               isLight
-                ? 'bg-purple-100/70 border border-purple-200 text-purple-700'
-                : 'bg-gradient-to-br from-purple-600/30 to-indigo-600/20 border border-purple-500/40 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.3)]'
+                ? 'bg-gradient-to-br from-[#0E5B59] to-[#286D78] text-white shadow-xs'
+                : 'bg-gradient-to-br from-[#0E5B59] to-[#286D78] text-white border border-[#14918E]/30 shadow-[0_0_15px_rgba(14,91,89,0.3)]'
             )}
           >
-            <Sparkles className="w-5 h-5" />
+            <Layers className="w-5 h-5 text-white" />
           </div>
           <div className="overflow-hidden">
             <h1
               className={cn(
                 'font-bold tracking-tight text-base font-sans',
-                isLight ? 'text-[#111827]' : 'text-white'
+                isLight ? 'text-[#172321]' : 'text-white'
               )}
             >
               Orchestra AI
             </h1>
             <p
               className={cn(
-                'text-[11px] font-sans',
-                isLight ? 'text-[#6B7280]' : 'text-gray-400'
+                'text-[11px] font-sans font-medium',
+                isLight ? 'text-[#68736F]' : 'text-gray-400'
               )}
             >
               AI Research Orchestration
@@ -79,7 +79,7 @@ export const Sidebar: React.FC = () => {
         </div>
 
         {/* Navigation Links */}
-        <nav className="space-y-1 pt-2">
+        <nav className="space-y-1.5 pt-2">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
 
@@ -92,12 +92,10 @@ export const Sidebar: React.FC = () => {
                   cn(
                     'flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs transition-all duration-150 group font-sans',
                     isActive
-                      ? isLight
-                        ? 'bg-[#EEF2FF] text-[#4338CA] font-semibold border border-purple-200 shadow-xs'
-                        : 'bg-[#18162E] text-white font-medium border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.15)]'
+                      ? 'bg-[#0E5B59] text-white font-semibold shadow-xs'
                       : isLight
-                      ? 'text-[#6B7280] hover:text-[#111827] hover:bg-[#F3F4F6] border border-transparent'
-                      : 'text-gray-400 hover:text-white hover:bg-[#121626] border border-transparent'
+                      ? 'text-[#68736F] hover:text-[#172321] hover:bg-[#F1F2ED] border border-transparent'
+                      : 'text-gray-400 hover:text-white hover:bg-[#131920] border border-transparent'
                   )
                 }
               >
@@ -107,11 +105,9 @@ export const Sidebar: React.FC = () => {
                       className={cn(
                         'w-4 h-4 transition-colors',
                         isActive
-                          ? isLight
-                            ? 'text-[#6D28D9]'
-                            : 'text-purple-400'
+                          ? 'text-white'
                           : isLight
-                          ? 'text-[#9CA3AF] group-hover:text-[#4B5563]'
+                          ? 'text-[#68736F] group-hover:text-[#172321]'
                           : 'text-gray-400 group-hover:text-gray-200'
                       )}
                     />
@@ -131,15 +127,15 @@ export const Sidebar: React.FC = () => {
         className={cn(
           'relative rounded-2xl p-4 overflow-hidden transition-all',
           isLight
-            ? 'bg-[#FFFFFF] border border-[#EAEAE7] shadow-xs'
-            : 'bg-[#121626] border border-white/5 shadow-lg'
+            ? 'bg-[#FFFFFF] border border-[#E4E7E0] shadow-xs'
+            : 'bg-[#131920] border border-[#1F2A37] shadow-lg'
         )}
       >
         <div className="w-full flex items-center justify-center py-1">
           <img
             src={heroImage}
             alt="5-Agent Pipeline"
-            className="h-16 object-contain filter drop-shadow-[0_8px_16px_rgba(168,85,247,0.25)]"
+            className="h-16 object-contain filter drop-shadow-[0_8px_16px_rgba(14,91,89,0.18)]"
           />
         </div>
 
@@ -147,7 +143,7 @@ export const Sidebar: React.FC = () => {
           <h4
             className={cn(
               'text-xs font-semibold tracking-tight',
-              isLight ? 'text-[#111827]' : 'text-white'
+              isLight ? 'text-[#172321]' : 'text-white'
             )}
           >
             5-Agent Research Pipeline
@@ -155,7 +151,7 @@ export const Sidebar: React.FC = () => {
           <p
             className={cn(
               'text-[10px] mt-1 leading-snug',
-              isLight ? 'text-[#6B7280]' : 'text-gray-400'
+              isLight ? 'text-[#68736F]' : 'text-gray-400'
             )}
           >
             Plan &bull; Research &bull; Analyze &bull; Verify &bull; Report

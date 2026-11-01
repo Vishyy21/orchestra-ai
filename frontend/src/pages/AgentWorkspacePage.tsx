@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useTheme } from '../lib/theme';
-import { WaveGraphic } from '../components/ui/WaveGraphic';
 import type { AgentRunBrief, TaskStatus } from '../types';
 import {
   FileText,
@@ -398,8 +397,8 @@ export const AgentWorkspacePage: React.FC = () => {
             className={cn(
               'w-9 h-9 rounded-xl flex items-center justify-center p-2 shadow-xs transition-all',
               isLight
-                ? 'bg-purple-100 text-purple-700 border border-purple-200'
-                : 'bg-purple-600/20 text-purple-400 border border-purple-500/40 shadow-[0_0_12px_rgba(168,85,247,0.3)]'
+                ? 'bg-[#E6F4F1] text-[#0E5B59] border border-[#C8E4DE]'
+                : 'bg-[#132B2A] text-[#22D3EE] border border-[#1E4B48] shadow-[0_0_12px_rgba(14,91,89,0.3)]'
             )}
           >
             <Sparkles className="w-5 h-5" />
@@ -409,17 +408,17 @@ export const AgentWorkspacePage: React.FC = () => {
             <h1
               className={cn(
                 'text-base sm:text-lg font-bold tracking-tight leading-tight',
-                isLight ? 'text-[#111827]' : 'text-white'
+                isLight ? 'text-[#172321]' : 'text-white'
               )}
             >
               {taskTitle}
             </h1>
-            <div className={cn('text-[11px] flex items-center gap-2 mt-0.5', isLight ? 'text-[#6B7280]' : 'text-gray-400')}>
+            <div className={cn('text-[11px] flex items-center gap-2 mt-0.5', isLight ? 'text-[#68736F]' : 'text-gray-400')}>
               <span>Task ID: {effectiveTaskId}</span>
               <span>&bull;</span>
               <span>Started 2 min ago</span>
               {attempts.length > 0 && (
-                <span className="text-purple-600 dark:text-purple-300 ml-2 font-mono text-[10px] font-semibold">
+                <span className="text-[#0E5B59] dark:text-[#22D3EE] ml-2 font-mono text-[10px] font-semibold">
                   Attempt {activeAttempt?.attemptNumber || attempts.length} of {attempts.length} (Latest)
                 </span>
               )}
@@ -429,8 +428,8 @@ export const AgentWorkspacePage: React.FC = () => {
 
         <div className="flex items-center gap-3">
           {task?.status === 'completed' ? (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EAF5EE] dark:bg-[#10241B] border border-[#D1EAD8] dark:border-[#1A3E2F] text-[#21845A] dark:text-[#34D399] text-xs font-semibold">
+              <span className="w-2 h-2 rounded-full bg-[#21845A]" />
               <span>Completed</span>
             </div>
           ) : task?.status === 'failed' ? (
@@ -439,8 +438,8 @@ export const AgentWorkspacePage: React.FC = () => {
               <span>Failed / Rejected</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-500/15 border border-blue-200 dark:border-blue-500/30 text-blue-700 dark:text-blue-400 text-xs font-semibold shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F4F1] dark:bg-[#132B2A] border border-[#C8E4DE] dark:border-[#1E4B48] text-[#0E5B59] dark:text-[#22D3EE] text-xs font-semibold shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-[#0E5B59] dark:bg-[#22D3EE] animate-pulse" />
               <span>In Progress</span>
             </div>
           )}
@@ -452,17 +451,17 @@ export const AgentWorkspacePage: React.FC = () => {
         className={cn(
           'rounded-full py-2 px-6 flex items-center justify-center gap-3 max-w-lg mx-auto border shadow-xs transition-all',
           isLight
-            ? 'bg-white border-[#EAEAE7]'
-            : 'bg-[#121626] border-purple-500/20'
+            ? 'bg-white border-[#E4E7E0]'
+            : 'bg-[#131920] border-[#1F2A37]'
         )}
       >
-        <Cpu className="w-4 h-4 text-purple-600 dark:text-purple-400 animate-spin-slow" />
+        <Cpu className="w-4 h-4 text-[#0E5B59] dark:text-[#22D3EE] animate-spin-slow" />
         <div className="text-xs text-center flex items-center gap-2">
-          <span className={cn('font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+          <span className={cn('font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
             Executing: Analyst
           </span>
           <span className="text-gray-400 hidden sm:inline">&bull;</span>
-          <span className={cn('text-[11px] hidden sm:inline', isLight ? 'text-[#6B7280]' : 'text-gray-400')}>
+          <span className={cn('text-[11px] hidden sm:inline', isLight ? 'text-[#68736F]' : 'text-gray-400')}>
             Analyzing research findings and extracting insights...
           </span>
         </div>
@@ -473,12 +472,45 @@ export const AgentWorkspacePage: React.FC = () => {
         className={cn(
           'relative rounded-2xl border p-6 lg:p-8 overflow-hidden transition-all',
           isLight
-            ? 'bg-[#FFFFFF] border-[#EAEAE7] shadow-xs'
-            : 'bg-[#121626] border-[#1E2538] shadow-xl'
+            ? 'bg-[#FFFFFF] border-[#E4E7E0] shadow-xs'
+            : 'bg-[#131920] border-[#1F2A37] shadow-xl'
         )}
       >
-        {/* Subtle flowing wave conduit in the background */}
-        <WaveGraphic variant="conduit" className="h-full opacity-60" />
+        {/* Smooth SVG Connecting Flow Conduit spanning the 5 nodes */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-12">
+          <svg
+            viewBox="0 0 1000 60"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-full h-12"
+            preserveAspectRatio="none"
+          >
+            <defs>
+              <linearGradient id="pipelineTealGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#0E5B59" stopOpacity="0.8" />
+                <stop offset="35%" stopColor="#286D78" stopOpacity="0.9" />
+                <stop offset="70%" stopColor="#14B8A6" stopOpacity="0.8" />
+                <stop offset="100%" stopColor="#C5A46D" stopOpacity="0.6" />
+              </linearGradient>
+            </defs>
+            {/* Background Conduit Track */}
+            <path
+              d="M 50 30 L 950 30"
+              stroke={isLight ? '#E4E7E0' : '#1F2A37'}
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+            {/* Active Glowing Flow Line with Reduced-Motion Support */}
+            <path
+              d="M 50 30 L 950 30"
+              stroke="url(#pipelineTealGradient)"
+              strokeWidth="2.5"
+              strokeDasharray="8 8"
+              className="motion-safe:animate-[pulse_3s_ease-in-out_infinite]"
+              opacity="0.8"
+            />
+          </svg>
+        </div>
 
         <div className="relative z-10 grid grid-cols-5 gap-3 sm:gap-6 items-center text-center">
           {executionStates.map((agentState) => {
@@ -500,8 +532,8 @@ export const AgentWorkspacePage: React.FC = () => {
                 {/* Node Box or Circle */}
                 {isRunning ? (
                   /* Active Signature Glowing Halo Circle */
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#4F46E5] ring-4 ring-purple-500/40 shadow-[0_0_35px_rgba(168,85,247,0.7)] flex items-center justify-center text-white transition-all transform scale-110">
-                    <Icon className="w-6 h-6" />
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-[#0E5B59] to-[#286D78] ring-4 ring-[#0E5B59]/30 shadow-[0_0_25px_rgba(14,91,89,0.4)] flex items-center justify-center text-white transition-all transform scale-105 motion-safe:animate-pulse">
+                    <Icon className="w-6 h-6 text-white" />
                   </div>
                 ) : (
                   /* Standard Node Box */
@@ -510,19 +542,19 @@ export const AgentWorkspacePage: React.FC = () => {
                       'w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center transition-all border',
                       isSelected
                         ? isLight
-                          ? 'bg-purple-100 border-purple-500 text-purple-700 shadow-sm'
-                          : 'bg-[#1E1B38] border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.4)] text-purple-300'
+                          ? 'bg-[#E6F4F1] border-[#0E5B59] text-[#0E5B59] shadow-xs'
+                          : 'bg-[#132B2A] border-[#14918E] shadow-[0_0_15px_rgba(14,91,89,0.3)] text-[#22D3EE]'
                         : isCompleted
                         ? isLight
-                          ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
-                          : 'bg-[#10221E] border-emerald-500/40 text-emerald-400'
+                          ? 'bg-[#EAF5EE] border-[#D1EAD8] text-[#21845A]'
+                          : 'bg-[#10241B] border-[#1A3E2F] text-[#34D399]'
                         : isRejected
                         ? isLight
-                          ? 'bg-rose-50 border-rose-300 text-rose-700'
+                          ? 'bg-rose-50 border-rose-200 text-rose-700'
                           : 'bg-[#281216] border-rose-500/40 text-rose-400'
                         : isLight
-                        ? 'bg-gray-50 border-gray-200 text-gray-500'
-                        : 'bg-[#0E1220] border-[#1E2538] text-gray-400'
+                        ? 'bg-gray-50 border-[#E4E7E0] text-gray-500'
+                        : 'bg-[#131920] border-[#1F2A37] text-gray-400'
                     )}
                   >
                     <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -535,9 +567,9 @@ export const AgentWorkspacePage: React.FC = () => {
                   className={cn(
                     'mt-2.5 text-xs font-bold tracking-tight transition-colors',
                     isRunning
-                      ? 'text-purple-600 dark:text-purple-300'
+                      ? 'text-[#0E5B59] dark:text-[#22D3EE]'
                       : isLight
-                      ? 'text-[#111827] group-hover:text-purple-700'
+                      ? 'text-[#172321] group-hover:text-[#0E5B59]'
                       : 'text-gray-200 group-hover:text-white'
                   )}
                 >
@@ -547,13 +579,13 @@ export const AgentWorkspacePage: React.FC = () => {
                 {/* Status Indicator Icon & Test Badge under Node */}
                 <div className="mt-1 flex flex-col items-center gap-0.5">
                   {isCompleted ? (
-                    <div className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400">
+                    <div className="flex items-center gap-1 text-[10px] text-[#21845A] dark:text-[#34D399]">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       <span className="font-mono font-bold">DONE</span>
                     </div>
                   ) : isRunning ? (
-                    <div className="flex items-center gap-1 text-[10px] text-purple-600 dark:text-purple-400">
-                      <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                    <div className="flex items-center gap-1 text-[10px] text-[#0E5B59] dark:text-[#22D3EE]">
+                      <span className="w-2 h-2 rounded-full bg-[#0E5B59] dark:bg-[#22D3EE] animate-pulse" />
                       <span className="font-mono font-bold">RUNNING</span>
                     </div>
                   ) : isRejected ? (
@@ -567,7 +599,7 @@ export const AgentWorkspacePage: React.FC = () => {
                       <span className="font-mono">NOT EXECUTED</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400">
+                    <div className="flex items-center gap-1 text-[10px] text-[#B7791F] dark:text-[#D69E2E]">
                       <Hourglass className="w-3 h-3" />
                       <span className="font-mono">WAITING</span>
                     </div>
@@ -619,8 +651,8 @@ export const AgentWorkspacePage: React.FC = () => {
                     'p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between',
                     isSelected
                       ? isLight
-                        ? 'bg-purple-50/80 border-purple-300 text-purple-900 shadow-xs'
-                        : 'bg-[#18162E] border-purple-500/40 text-white shadow-sm'
+                        ? 'bg-[#E6F4F1] border-[#C8E4DE] text-[#0E5B59] shadow-xs'
+                        : 'bg-[#132B2A] border-[#1E4B48] text-white shadow-sm'
                       : isLight
                       ? 'bg-[#F9FAFB] border-[#E5E7EB] text-[#374151] hover:bg-gray-50'
                       : 'bg-[#0E1220] border-[#1E2538] text-gray-300 hover:bg-[#121626]'
@@ -628,18 +660,18 @@ export const AgentWorkspacePage: React.FC = () => {
                 >
                   <div className="flex items-center gap-3">
                     {isCompleted ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-[#21845A] dark:text-[#34D399] shrink-0" />
                     ) : isRunning ? (
-                      <span className="w-2.5 h-2.5 rounded-full bg-purple-500 animate-pulse shrink-0" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#0E5B59] dark:bg-[#22D3EE] animate-pulse shrink-0" />
                     ) : (
                       <span className="w-2.5 h-2.5 rounded-full bg-gray-300 dark:bg-gray-600 shrink-0" />
                     )}
 
                     <div>
-                      <div className={cn('text-xs font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+                      <div className={cn('text-xs font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
                         {agent.name}
                       </div>
-                      <div className={cn('text-[10px]', isLight ? 'text-[#6B7280]' : 'text-gray-400')}>
+                      <div className={cn('text-[10px]', isLight ? 'text-[#68736F]' : 'text-gray-400')}>
                         {isCompleted
                           ? `Completed • ${duration}`
                           : isRunning
@@ -649,7 +681,7 @@ export const AgentWorkspacePage: React.FC = () => {
                     </div>
                   </div>
 
-                  {isRunning && <ChevronRight className="w-4 h-4 text-purple-500" />}
+                  {isRunning && <ChevronRight className="w-4 h-4 text-[#0E5B59] dark:text-[#22D3EE]" />}
                 </div>
               );
             })}
@@ -661,21 +693,21 @@ export const AgentWorkspacePage: React.FC = () => {
           className={cn(
             'lg:col-span-8 rounded-2xl border p-5 sm:p-6 space-y-4 shadow-xs relative overflow-hidden flex flex-col justify-between transition-all min-h-[460px]',
             isLight
-              ? 'bg-[#FFFFFF] border-[#EAEAE7]'
-              : 'bg-[#121626] border-[#1E2538]'
+              ? 'bg-[#FFFFFF] border-[#E4E7E0]'
+              : 'bg-[#131920] border-[#1F2A37]'
           )}
         >
           {/* Top Pill Tabs */}
-          <div className="flex items-center gap-2 border-b border-gray-100 dark:border-[#1E2538] pb-3">
+          <div className="flex items-center gap-2 border-b border-gray-100 dark:border-[#1F2A37] pb-3">
             <button
               onClick={() => setInspectorTab('output')}
               className={cn(
                 'px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5',
                 inspectorTab === 'output'
-                  ? 'bg-purple-600 text-white shadow-xs'
+                  ? 'bg-[#0E5B59] text-white shadow-xs'
                   : isLight
-                  ? 'bg-gray-50 text-[#6B7280] hover:text-[#111827] border border-gray-200'
-                  : 'bg-[#0E1220] text-gray-400 hover:text-white border border-[#1E2538]'
+                  ? 'bg-white text-[#68736F] hover:text-[#172321] border border-[#E4E7E0]'
+                  : 'bg-[#18202A] text-gray-400 hover:text-white border border-[#1F2A37]'
               )}
             >
               <BarChart3 className="w-3.5 h-3.5" />
@@ -687,10 +719,10 @@ export const AgentWorkspacePage: React.FC = () => {
               className={cn(
                 'px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5',
                 inspectorTab === 'evidence'
-                  ? 'bg-purple-600 text-white shadow-xs'
+                  ? 'bg-[#0E5B59] text-white shadow-xs'
                   : isLight
-                  ? 'bg-gray-50 text-[#6B7280] hover:text-[#111827] border border-gray-200'
-                  : 'bg-[#0E1220] text-gray-400 hover:text-white border border-[#1E2538]'
+                  ? 'bg-white text-[#68736F] hover:text-[#172321] border border-[#E4E7E0]'
+                  : 'bg-[#18202A] text-gray-400 hover:text-white border border-[#1F2A37]'
               )}
             >
               <BookOpen className="w-3.5 h-3.5" />
@@ -702,10 +734,10 @@ export const AgentWorkspacePage: React.FC = () => {
               className={cn(
                 'px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5',
                 inspectorTab === 'logs'
-                  ? 'bg-purple-600 text-white shadow-xs'
+                  ? 'bg-[#0E5B59] text-white shadow-xs'
                   : isLight
-                  ? 'bg-gray-50 text-[#6B7280] hover:text-[#111827] border border-gray-200'
-                  : 'bg-[#0E1220] text-gray-400 hover:text-white border border-[#1E2538]'
+                  ? 'bg-white text-[#68736F] hover:text-[#172321] border border-[#E4E7E0]'
+                  : 'bg-[#18202A] text-gray-400 hover:text-white border border-[#1F2A37]'
               )}
             >
               <Terminal className="w-3.5 h-3.5" />
@@ -717,10 +749,10 @@ export const AgentWorkspacePage: React.FC = () => {
               className={cn(
                 'px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5',
                 inspectorTab === 'attempts'
-                  ? 'bg-purple-600 text-white shadow-xs'
+                  ? 'bg-[#0E5B59] text-white shadow-xs'
                   : isLight
-                  ? 'bg-gray-50 text-[#6B7280] hover:text-[#111827] border border-gray-200'
-                  : 'bg-[#0E1220] text-gray-400 hover:text-white border border-[#1E2538]'
+                  ? 'bg-white text-[#68736F] hover:text-[#172321] border border-[#E4E7E0]'
+                  : 'bg-[#18202A] text-gray-400 hover:text-white border border-[#1F2A37]'
               )}
             >
               <History className="w-3.5 h-3.5" />
@@ -733,14 +765,14 @@ export const AgentWorkspacePage: React.FC = () => {
             <div className="space-y-4 flex-1">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                  <h4 className={cn('text-sm font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+                  <BarChart3 className="w-4 h-4 text-[#0E5B59] dark:text-[#22D3EE]" />
+                  <h4 className={cn('text-sm font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
                     {selectedState.meta.name} Output (Live)
                   </h4>
                 </div>
 
                 {selectedState.status === 'running' || selectedState.meta.id === 'analyst' ? (
-                  <span className="text-xs text-purple-600 dark:text-purple-400 font-mono flex items-center gap-1.5 animate-pulse">
+                  <span className="text-xs text-[#0E5B59] dark:text-[#22D3EE] font-mono flex items-center gap-1.5 animate-pulse">
                     <RefreshCw className="w-3 h-3 animate-spin" />
                     Generating...
                   </span>
@@ -811,7 +843,7 @@ export const AgentWorkspacePage: React.FC = () => {
                           <span>✓</span>
                           <span>Identifying potential discrepancies</span>
                         </div>
-                        <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
+                        <div className="flex items-center gap-2 text-[#0E5B59] dark:text-[#22D3EE]">
                           <span>○</span>
                           <span>Synthesizing insights for verification</span>
                         </div>
@@ -827,10 +859,10 @@ export const AgentWorkspacePage: React.FC = () => {
           {inspectorTab === 'evidence' && (
             <div className="space-y-3 flex-1 overflow-y-auto max-h-80 pr-1">
               <div className="flex items-center justify-between pb-1">
-                <span className={cn('text-xs font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+                <span className={cn('text-xs font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
                   Retrieved Research Grounding Records
                 </span>
-                <span className="text-[11px] font-mono text-purple-600 dark:text-purple-400 font-semibold">
+                <span className="text-[11px] font-mono text-[#0E5B59] dark:text-[#22D3EE] font-semibold">
                   {parsedEvidence.length} Sources Found
                 </span>
               </div>
@@ -850,11 +882,11 @@ export const AgentWorkspacePage: React.FC = () => {
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2">
                           {ev.type === 'document' ? (
-                            <FileText className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
+                            <FileText className="w-3.5 h-3.5 text-[#0E5B59] dark:text-[#22D3EE] shrink-0" />
                           ) : (
-                            <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400 shrink-0" />
+                            <Globe className="w-3.5 h-3.5 text-[#286D78] dark:text-[#388B97] shrink-0" />
                           )}
-                          <span className={cn('font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+                          <span className={cn('font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
                             {ev.title}
                           </span>
                         </div>
@@ -883,7 +915,7 @@ export const AgentWorkspacePage: React.FC = () => {
                       )}
 
                       {ev.type === 'document' && (
-                        <div className="text-[11px] text-purple-600 dark:text-purple-300 font-mono">
+                        <div className="text-[11px] text-[#0E5B59] dark:text-[#22D3EE] font-mono">
                           Page {ev.pageNumber} &bull; Chunk #{ev.chunkIndex}
                         </div>
                       )}
@@ -942,8 +974,8 @@ export const AgentWorkspacePage: React.FC = () => {
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Terminal className="w-3.5 h-3.5 text-purple-500" />
-                            <span className={cn('font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+                            <Terminal className="w-3.5 h-3.5 text-[#0E5B59] dark:text-[#22D3EE]" />
+                            <span className={cn('font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
                               {run.agent_name}
                             </span>
                           </div>
@@ -996,10 +1028,10 @@ export const AgentWorkspacePage: React.FC = () => {
           {inspectorTab === 'attempts' && (
             <div className="space-y-3 flex-1 overflow-y-auto max-h-80 pr-1">
               <div className="flex items-center justify-between pb-1">
-                <span className={cn('text-xs font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+                <span className={cn('text-xs font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
                   Execution Attempt History
                 </span>
-                <span className="text-[11px] font-mono text-purple-600 dark:text-purple-400">
+                <span className="text-[11px] font-mono text-[#0E5B59] dark:text-[#22D3EE]">
                   {attempts.length} Total Attempts
                 </span>
               </div>
@@ -1019,8 +1051,8 @@ export const AgentWorkspacePage: React.FC = () => {
                           'p-4 rounded-xl border text-xs space-y-2 cursor-pointer transition-all',
                           isSelected
                             ? isLight
-                              ? 'bg-purple-50/80 border-purple-400 shadow-xs'
-                              : 'bg-[#18162E] border-purple-500/50 shadow-md'
+                              ? 'bg-[#E6F4F1] border-[#C8E4DE] shadow-xs'
+                              : 'bg-[#132B2A] border-[#1E4B48] shadow-md'
                             : isLight
                             ? 'bg-[#F9FAFB] border-[#E5E7EB] hover:bg-gray-50'
                             : 'bg-[#0A0D18] border-[#1E2538] hover:bg-[#121626]'
@@ -1028,11 +1060,11 @@ export const AgentWorkspacePage: React.FC = () => {
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm text-purple-600 dark:text-purple-400">
+                            <span className="font-bold text-sm text-[#0E5B59] dark:text-[#22D3EE]">
                               Attempt #{att.attemptNumber}
                             </span>
                             {att.isLatest && (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30">
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E6F4F1] dark:bg-[#132B2A] text-[#0E5B59] dark:text-[#22D3EE] border border-[#C8E4DE] dark:border-[#1E4B48]">
                                 LATEST
                               </span>
                             )}
@@ -1042,7 +1074,7 @@ export const AgentWorkspacePage: React.FC = () => {
                             className={cn(
                               'px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase font-mono',
                               att.status === 'completed'
-                                ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                ? 'bg-[#EAF5EE] dark:bg-[#10241B] text-[#21845A] dark:text-[#34D399]'
                                 : att.status === 'rejected'
                                 ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400'
                                 : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
@@ -1068,7 +1100,7 @@ export const AgentWorkspacePage: React.FC = () => {
                   })
                 ) : (
                   <div className="p-3.5 rounded-xl border text-xs text-gray-400">
-                    <span className="font-bold text-purple-500 font-mono">Attempt #1</span>
+                    <span className="font-bold text-[#0E5B59] font-mono">Attempt #1</span>
                     <span className="ml-2 font-mono">5 Agent Runs &bull; completed</span>
                   </div>
                 )}
@@ -1079,7 +1111,7 @@ export const AgentWorkspacePage: React.FC = () => {
           {/* Database Event Logs Panel (Always present in DOM to satisfy Vitest test assertions) */}
           <div className="pt-3 border-t border-gray-100 dark:border-[#1E2538]">
             <div className="flex items-center justify-between text-[11px] font-mono text-gray-400 mb-2">
-              <span className={cn('font-semibold', isLight ? 'text-[#374151]' : 'text-gray-300')}>
+              <span className={cn('font-semibold', isLight ? 'text-[#172321]' : 'text-gray-300')}>
                 Database Event Logs
               </span>
               <span>SQLite AgentRun Stream</span>
@@ -1096,11 +1128,11 @@ export const AgentWorkspacePage: React.FC = () => {
                     )}
                   >
                     <div className="flex items-center gap-2 font-mono">
-                      <span className="text-purple-600 dark:text-purple-400 font-bold">
+                      <span className="text-[#0E5B59] dark:text-[#22D3EE] font-bold">
                         Attempt #{att.attemptNumber}
                       </span>
                       {att.isLatest && (
-                        <span className="text-[10px] bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 px-1.5 py-0.2 rounded border border-purple-200 dark:border-purple-500/30 font-bold">
+                        <span className="text-[10px] bg-[#E6F4F1] dark:bg-[#132B2A] text-[#0E5B59] dark:text-[#22D3EE] px-1.5 py-0.2 rounded border border-[#C8E4DE] dark:border-[#1E4B48] font-bold">
                           LATEST
                         </span>
                       )}
@@ -1117,7 +1149,7 @@ export const AgentWorkspacePage: React.FC = () => {
                     isLight ? 'bg-[#F9FAFB] border-[#E5E7EB]' : 'bg-[#0A0D18] border-[#1E2538]'
                   )}
                 >
-                  <span className="text-purple-600 dark:text-purple-400 font-bold font-mono">
+                  <span className="text-[#0E5B59] dark:text-[#22D3EE] font-bold font-mono">
                     Attempt #1
                   </span>
                   <span className="text-[11px] text-gray-500 dark:text-gray-400 font-mono">
@@ -1129,7 +1161,7 @@ export const AgentWorkspacePage: React.FC = () => {
           </div>
 
           {/* Bottom Accent Highlight Line */}
-          <div className="h-[2px] bg-gradient-to-r from-purple-500 via-indigo-500 to-transparent w-full absolute bottom-0 left-0" />
+          <div className="h-[2px] bg-gradient-to-r from-[#0E5B59] via-[#286D78] to-transparent w-full absolute bottom-0 left-0" />
         </div>
       </div>
     </div>

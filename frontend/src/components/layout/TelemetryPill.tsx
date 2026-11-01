@@ -65,7 +65,7 @@ export const TelemetryPill: React.FC = () => {
       <div className="flex items-center gap-2">
         <button
           onClick={() => setShowPopover(!showPopover)}
-          className="flex items-center gap-2.5 px-3 py-1.5 rounded bg-[#121624] border border-[#1F273B] hover:border-[#8B5CF6]/40 text-xs transition-all duration-150 shadow-sm"
+          className="flex items-center gap-2.5 px-3 py-1.5 rounded bg-[#121624] border border-[#1F273B] hover:border-[#0E5B59]/60 text-xs transition-all duration-150 shadow-sm"
           title="Click to view Ollama diagnostics"
         >
           {/* Status Dot with pulse */}
@@ -106,7 +106,7 @@ export const TelemetryPill: React.FC = () => {
             onClick={() => refetchLLM()}
             isLoading={isRefetchingLLM}
             title="Probe Ollama connection"
-            className="text-xs h-7 px-2.5 font-mono border-[#1F273B] hover:border-[#8B5CF6]/50 bg-[#121624]"
+            className="text-xs h-7 px-2.5 font-mono border-[#1F273B] hover:border-[#0E5B59]/60 bg-[#121624]"
           >
             <RefreshCw className="w-3 h-3" />
             <span className="hidden sm:inline text-[11px]">Probe</span>

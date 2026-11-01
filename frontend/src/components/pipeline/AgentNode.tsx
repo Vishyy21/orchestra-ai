@@ -63,7 +63,7 @@ export const AgentNode = memo(({ data }: NodeProps) => {
     <div
       className={`w-64 rounded-xl bg-[#11141D] border transition-all duration-200 text-left relative p-3.5 shadow-card ${
         nodeData.status === 'active'
-          ? 'border-[#6366F1] ring-1 ring-[#6366F1]/50 shadow-glow bg-[#151924]'
+          ? 'border-[#0E5B59] ring-1 ring-[#0E5B59]/50 shadow-glow bg-[#151924]'
           : 'border-[#1E2330] hover:border-[#2D3447]'
       }`}
     >
@@ -71,7 +71,7 @@ export const AgentNode = memo(({ data }: NodeProps) => {
       <Handle
         type="target"
         position={Position.Left}
-        className="!w-2.5 !h-2.5 !bg-[#1E2330] hover:!bg-[#6366F1] !border !border-[#08090C]"
+        className="!w-2.5 !h-2.5 !bg-[#1E2330] hover:!bg-[#0E5B59] !border !border-[#08090C]"
       />
 
       {/* Header: Icon + Title + Status */}
@@ -113,7 +113,7 @@ export const AgentNode = memo(({ data }: NodeProps) => {
       <Handle
         type="source"
         position={Position.Right}
-        className="!w-2.5 !h-2.5 !bg-[#1E2330] hover:!bg-[#6366F1] !border !border-[#08090C]"
+        className="!w-2.5 !h-2.5 !bg-[#1E2330] hover:!bg-[#0E5B59] !border !border-[#08090C]"
       />
     </div>
   );

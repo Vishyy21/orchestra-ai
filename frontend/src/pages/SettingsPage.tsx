@@ -97,8 +97,8 @@ export const SettingsPage: React.FC = () => {
         )}
       >
         <div className="flex items-center gap-2.5 pb-3 border-b border-gray-100 dark:border-[#1E2538]">
-          <Sliders className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-          <h2 className={cn('text-sm font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+          <Sliders className="w-4 h-4 text-[#0E5B59] dark:text-[#22D3EE]" />
+          <h2 className={cn('text-sm font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
             Visual Appearance &amp; Theme
           </h2>
         </div>
@@ -110,28 +110,28 @@ export const SettingsPage: React.FC = () => {
             className={cn(
               'p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3.5',
               theme === 'dark'
-                ? 'border-purple-500 bg-purple-500/10 shadow-sm ring-1 ring-purple-500'
+                ? 'border-[#0E5B59] bg-[#0E5B59]/10 shadow-xs ring-1 ring-[#0E5B59]'
                 : isLight
                 ? 'bg-[#F9FAFB] border-[#E5E7EB] hover:bg-gray-50'
                 : 'bg-[#0A0D18] border-[#1E2538] hover:bg-[#151B2E]'
             )}
           >
-            <div className="w-9 h-9 rounded-xl bg-[#0B0D14] border border-[#1E2538] text-purple-400 flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-[#0C1015] border border-[#1F2A37] text-[#22D3EE] flex items-center justify-center shrink-0">
               <Moon className="w-4 h-4" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className={cn('text-xs font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+                <span className={cn('text-xs font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
                   Midnight Dark
                 </span>
                 {theme === 'dark' && (
-                  <span className="text-[10px] font-semibold text-purple-400 bg-purple-950/60 px-2 py-0.2 rounded-full border border-purple-500/40">
+                  <span className="text-[10px] font-semibold text-[#22D3EE] bg-[#0E5B59]/30 px-2 py-0.2 rounded-full border border-[#0E5B59]/40">
                     Active
                   </span>
                 )}
               </div>
-              <p className={cn('text-[11px] mt-1 leading-relaxed', isLight ? 'text-[#6B7280]' : 'text-gray-400')}>
-                Deep space midnight blue canvas with radiant glowing conduits and neon highlights.
+              <p className={cn('text-[11px] mt-1 leading-relaxed', isLight ? 'text-[#68736F]' : 'text-gray-400')}>
+                Deep slate midnight charcoal canvas with radiant teal and champagne highlights.
               </p>
             </div>
           </div>
@@ -142,28 +142,28 @@ export const SettingsPage: React.FC = () => {
             className={cn(
               'p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3.5',
               theme === 'light'
-                ? 'border-purple-600 bg-purple-50 shadow-sm ring-1 ring-purple-600'
+                ? 'border-[#0E5B59] bg-[#E6F4F1] shadow-xs ring-1 ring-[#0E5B59]'
                 : isLight
                 ? 'bg-[#F9FAFB] border-[#E5E7EB] hover:bg-gray-50'
                 : 'bg-[#0A0D18] border-[#1E2538] hover:bg-[#151B2E]'
             )}
           >
-            <div className="w-9 h-9 rounded-xl bg-white border border-[#E5E7EB] text-amber-500 flex items-center justify-center shrink-0 shadow-2xs">
+            <div className="w-9 h-9 rounded-xl bg-white border border-[#E5E7EB] text-[#C5A46D] flex items-center justify-center shrink-0 shadow-2xs">
               <Sun className="w-4 h-4" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className={cn('text-xs font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+                <span className={cn('text-xs font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
                   Luxury Light
                 </span>
                 {theme === 'light' && (
-                  <span className="text-[10px] font-semibold text-purple-700 bg-purple-100 px-2 py-0.2 rounded-full border border-purple-200">
+                  <span className="text-[10px] font-semibold text-[#0E5B59] bg-[#E6F4F1] px-2 py-0.2 rounded-full border border-[#C8E4DE]">
                     Active
                   </span>
                 )}
               </div>
-              <p className={cn('text-[11px] mt-1 leading-relaxed', isLight ? 'text-[#6B7280]' : 'text-gray-400')}>
-                Warm ivory alabaster surfaces, deep ink typography, and restrained violet-emerald accents.
+              <p className={cn('text-[11px] mt-1 leading-relaxed', isLight ? 'text-[#68736F]' : 'text-gray-400')}>
+                Warm ivory surfaces, deep ink typography, and restrained teal-champagne accents.
               </p>
             </div>
           </div>
@@ -174,13 +174,13 @@ export const SettingsPage: React.FC = () => {
       <div
         className={cn(
           'rounded-2xl border p-6 space-y-5 shadow-xs transition-all',
-          isLight ? 'bg-[#FFFFFF] border-[#EAEAE7]' : 'bg-[#121626] border-[#1E2538]'
+          isLight ? 'bg-[#FFFFFF] border-[#EAEAE7]' : 'bg-[#131920] border-[#1F2A37]'
         )}
       >
-        <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-[#1E2538]">
+        <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-[#1F2A37]">
           <div className="flex items-center gap-2.5">
-            <Server className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-            <h2 className={cn('text-sm font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+            <Server className="w-4 h-4 text-[#0E5B59] dark:text-[#22D3EE]" />
+            <h2 className={cn('text-sm font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
               Local Ollama Inference
             </h2>
           </div>
@@ -255,14 +255,14 @@ export const SettingsPage: React.FC = () => {
               className={cn(
                 'flex-1 px-3.5 py-2 rounded-xl border text-xs focus:outline-none focus:ring-1 font-mono transition-all',
                 isLight
-                  ? 'bg-[#F9FAFB] border-[#E5E7EB] text-[#111827] focus:border-purple-600'
-                  : 'bg-[#0A0D18] border-[#1E2538] text-white focus:border-purple-500'
+                  ? 'bg-[#F9FAFB] border-[#E5E7EB] text-[#111827] focus:border-[#0E5B59]'
+                  : 'bg-[#0A0D18] border-[#1E2538] text-white focus:border-[#0E5B59]'
               )}
             />
             <button
               onClick={() => testMutation.mutate()}
               disabled={testMutation.isPending}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-semibold shadow-sm flex items-center gap-1.5 transition-all disabled:opacity-50"
+              className="px-4 py-2 rounded-xl bg-[#0E5B59] hover:bg-[#0A4543] text-white text-xs font-semibold shadow-sm flex items-center gap-1.5 transition-all disabled:opacity-50"
             >
               <Play className="w-3.5 h-3.5 fill-current" />
               <span>{testMutation.isPending ? 'Testing...' : 'Test Model'}</span>
@@ -319,7 +319,7 @@ export const SettingsPage: React.FC = () => {
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Globe className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <Globe className="w-4 h-4 text-[#0E5B59] dark:text-[#22D3EE]" />
                 <span className={cn('text-xs font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
                   Tavily Web Grounding
                 </span>
@@ -358,7 +358,7 @@ export const SettingsPage: React.FC = () => {
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <Terminal className="w-4 h-4 text-[#0E5B59] dark:text-[#22D3EE]" />
                 <span className={cn('text-xs font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
                   LangSmith Tracing
                 </span>
