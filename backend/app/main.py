@@ -40,10 +40,13 @@ async def lifespan(app: FastAPI):
     settings.ensure_directories()
     init_db()
     init_tracing()
+    from app.graph.workflow import get_workflow_checkpointer, close_checkpoint_connection
+    get_workflow_checkpointer()
     logger.info("Database initialized successfully at %s", settings.database_url)
     logger.info("ORCHESTRA AI v%s is ready for execution.", settings.version)
     yield
     logger.info("Shutting down ORCHESTRA AI...")
+    close_checkpoint_connection()
 
 
 app = FastAPI(

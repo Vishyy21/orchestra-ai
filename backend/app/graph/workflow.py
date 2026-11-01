@@ -8,11 +8,15 @@ and full database persistence of AgentRun, Report, and Task records.
 
 import time
 import logging
+import sqlite3
+from contextlib import contextmanager
+from pathlib import Path
 from datetime import datetime
 from typing import TypedDict, List, Dict, Any, Optional
 
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
 
 from app.config import settings
 from app.llm.ollama_client import ollama_client
@@ -652,8 +656,98 @@ def reporter_node(state: OrchestraAgentState) -> Dict[str, Any]:
 
 
 
-# Global LangGraph state checkpointer for state preservation and HITL pauses
-workflow_memory = InMemorySaver()
+# Checkpointer instances and lifecycle management
+_checkpoint_conn: Optional[sqlite3.Connection] = None
+_sqlite_checkpointer: Optional[SqliteSaver] = None
+workflow_memory = InMemorySaver()  # Retained as validated in-memory fallback
+
+
+def get_checkpoint_connection(db_path: Optional[Path] = None) -> sqlite3.Connection:
+    """Return a thread-safe SQLite connection for persistent checkpoints with WAL mode."""
+    global _checkpoint_conn
+    target_path = Path(db_path or settings.checkpoints_db_path)
+    if db_path is None and _checkpoint_conn is not None:
+        try:
+            cur = _checkpoint_conn.cursor()
+            cur.close()
+            return _checkpoint_conn
+        except Exception:
+            _checkpoint_conn = None
+
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(target_path), check_same_thread=False)
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("PRAGMA busy_timeout=5000;")
+    if db_path is None:
+        _checkpoint_conn = conn
+    return conn
+
+
+class ResilientSqliteSaver(SqliteSaver):
+    """Thread-safe LangGraph SqliteSaver that automatically reconnects if the SQLite connection was closed."""
+
+    def __init__(self, conn: sqlite3.Connection, db_path: Optional[Path] = None, **kwargs):
+        super().__init__(conn, **kwargs)
+        self.explicit_db_path = db_path
+
+    @property
+    def current_db_path(self) -> Path:
+        return Path(self.explicit_db_path or settings.checkpoints_db_path)
+
+    @contextmanager
+    def cursor(self, transaction: bool = True):
+        with self.lock:
+            # Check if active connection is still valid
+            try:
+                test_cur = self.conn.cursor()
+                test_cur.close()
+            except Exception:
+                target_path = self.current_db_path
+                logger.info(f"Re-establishing SQLite checkpoint connection to {target_path}...")
+                self.conn = get_checkpoint_connection(target_path)
+                self.is_setup = False
+            self.setup()
+            cur = self.conn.cursor()
+            try:
+                yield cur
+            finally:
+                if transaction:
+                    self.conn.commit()
+                cur.close()
+
+
+def close_checkpoint_connection() -> None:
+    """Safely close the persistent SQLite checkpoint connection on shutdown."""
+    global _checkpoint_conn, _sqlite_checkpointer
+    if _checkpoint_conn is not None:
+        try:
+            _checkpoint_conn.close()
+            logger.info("Closed persistent SQLite checkpoint database connection.")
+        except Exception as exc:
+            logger.warning(f"Error closing checkpoint connection: {exc}")
+        finally:
+            _checkpoint_conn = None
+            _sqlite_checkpointer = None
+
+
+def get_workflow_checkpointer(db_path: Optional[Path] = None) -> Any:
+    """Initialize or return the persistent SQLite checkpointer with graceful InMemorySaver fallback."""
+    global _sqlite_checkpointer
+    target_path = Path(db_path or settings.checkpoints_db_path)
+    if _sqlite_checkpointer is not None and db_path is None:
+        return _sqlite_checkpointer
+
+    try:
+        conn = get_checkpoint_connection(target_path)
+        saver = ResilientSqliteSaver(conn, db_path=target_path if db_path is not None else None)
+        saver.setup()
+        if db_path is None:
+            _sqlite_checkpointer = saver
+        logger.info(f"Initialized persistent SQLite checkpointer at {target_path}")
+        return saver
+    except Exception as exc:
+        logger.error(f"Failed to initialize SqliteSaver, falling back to InMemorySaver: {exc}")
+        return workflow_memory
 
 
 def build_orchestra_graph(
@@ -679,17 +773,18 @@ def build_orchestra_graph(
     builder.add_edge("reporter", END)
 
     compile_kwargs: Dict[str, Any] = {}
-    if checkpointer is not None:
-        compile_kwargs["checkpointer"] = checkpointer
+    active_checkpointer = checkpointer if checkpointer is not None else get_workflow_checkpointer()
+    if active_checkpointer is not None:
+        compile_kwargs["checkpointer"] = active_checkpointer
     if interrupt_before is not None:
         compile_kwargs["interrupt_before"] = interrupt_before
 
     return builder.compile(**compile_kwargs)
 
 
-# Global compiled workflow instances
-orchestra_workflow = build_orchestra_graph(checkpointer=workflow_memory)
-orchestra_hitl_workflow = build_orchestra_graph(checkpointer=workflow_memory, interrupt_before=["verifier"])
+# Global compiled workflow instances with persistent SQLite checkpointing
+orchestra_workflow = build_orchestra_graph()
+orchestra_hitl_workflow = build_orchestra_graph(interrupt_before=["verifier"])
 
 
 def execute_task_workflow(task_id: str, requires_approval: Optional[bool] = None) -> Dict[str, Any]:
@@ -825,8 +920,35 @@ def resume_task_workflow(task_id: str) -> Dict[str, Any]:
         task = db.query(Task).filter(Task.id == task_id).first()
         if not task:
             return {"success": False, "task_id": task_id, "error": f"Task '{task_id}' not found."}
-        task.status = "running"
-        db.commit()
+
+    # Verify that a valid saved checkpoint exists before attempting resumption
+    try:
+        snapshot = orchestra_hitl_workflow.get_state(config)
+        if not snapshot or not snapshot.values or not snapshot.next:
+            error_msg = f"No valid saved checkpoint found for task '{task_id}'. Cannot resume."
+            logger.error(error_msg)
+            with SessionLocal() as db:
+                t = db.query(Task).filter(Task.id == task_id).first()
+                if t:
+                    t.status = "failed"
+                    t.error_message = error_msg
+                    db.commit()
+            return {"success": False, "task_id": task_id, "status": "failed", "error": error_msg}
+    except Exception as chk_exc:
+        logger.error(f"Error reading checkpoint for task {task_id}: {chk_exc}")
+        with SessionLocal() as db:
+            t = db.query(Task).filter(Task.id == task_id).first()
+            if t:
+                t.status = "failed"
+                t.error_message = f"Checkpoint read error: {chk_exc}"
+                db.commit()
+        return {"success": False, "task_id": task_id, "status": "failed", "error": str(chk_exc)}
+
+    with SessionLocal() as db:
+        t = db.query(Task).filter(Task.id == task_id).first()
+        if t:
+            t.status = "running"
+            db.commit()
 
     try:
         # Resume execution: passes None as input to continue from interrupted node ('verifier')
@@ -844,10 +966,10 @@ def resume_task_workflow(task_id: str) -> Dict[str, Any]:
     except Exception as exc:
         logger.error(f"Error resuming task workflow {task_id}: {exc}")
         with SessionLocal() as db:
-            task = db.query(Task).filter(Task.id == task_id).first()
-            if task:
-                task.status = "failed"
-                task.error_message = f"Resumption error: {exc}"
+            t = db.query(Task).filter(Task.id == task_id).first()
+            if t:
+                t.status = "failed"
+                t.error_message = f"Resumption error: {exc}"
                 db.commit()
         return {
             "success": False,

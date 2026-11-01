@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     uploads_dir: Path = Path("./data/uploads")
     reports_dir: Path = Path("./data/reports")
     chroma_dir: Path = Path("./data/chroma")
+    checkpoints_db_path: Path = Path("./data/checkpoints.db")
 
     # Tavily Web Search Configuration
     tavily_api_key: str | None = None
@@ -102,6 +103,7 @@ class Settings(BaseSettings):
         self.uploads_dir.mkdir(parents=True, exist_ok=True)
         self.reports_dir.mkdir(parents=True, exist_ok=True)
         self.chroma_dir.mkdir(parents=True, exist_ok=True)
+        self.checkpoints_db_path.parent.mkdir(parents=True, exist_ok=True)
 
 
 settings = Settings()
