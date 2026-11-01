@@ -56,6 +56,12 @@ export const DashboardPage: React.FC = () => {
             Running
           </Badge>
         );
+      case 'awaiting_approval':
+        return (
+          <Badge variant="warning" pulse>
+            Awaiting Approval
+          </Badge>
+        );
       case 'failed':
         return <Badge variant="error">Failed</Badge>;
       default:

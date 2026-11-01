@@ -80,7 +80,7 @@ export const NewTaskPage: React.FC = () => {
     mutationFn: async (data: TaskCreateInput) => {
       const created = await api.createTask(data);
       try {
-        await api.executeTask(created.id);
+        await api.executeTask(created.id, false, data.requires_approval);
       } catch (err) {
         console.error('Failed to auto-dispatch task:', err);
       }
@@ -114,6 +114,7 @@ export const NewTaskPage: React.FC = () => {
       description: description.trim(),
       category,
       priority,
+      requires_approval: requireApproval,
     });
   };
 
