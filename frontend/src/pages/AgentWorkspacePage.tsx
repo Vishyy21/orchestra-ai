@@ -8,6 +8,204 @@ import { Button } from '../components/ui/Button';
 import { OrchestrationFlow } from '../components/pipeline/OrchestrationFlow';
 import { timeAgo, formatDate } from '../lib/utils';
 import type { AgentRunBrief, TaskStatus } from '../types';
+export const HITL_REJECTION_PREFIX =
+  'ACTION REJECTED: Task rejected by Human-in-the-Loop governance';
+
+export type DerivedAgentStatus =
+  | 'completed'
+  | 'running'
+  | 'awaiting_approval'
+  | 'rejected_at_gate'
+  | 'not_executed'
+  | 'failed'
+  | 'waiting';
+
+export interface ExecutionAttempt {
+  attemptNumber: number;
+  runs: AgentRunBrief[];
+  status: 'completed' | 'failed' | 'rejected' | 'running';
+  startedAt?: string;
+  completedAt?: string;
+  isLatest: boolean;
+  rejectionReason?: string;
+}
+
+export function isHitlRejectionRun(run?: AgentRunBrief | null): boolean {
+  if (!run || !run.output_data) return false;
+  return run.output_data.includes(HITL_REJECTION_PREFIX);
+}
+
+export function extractRejectionReason(outputData?: string | null): string {
+  if (!outputData) return '';
+  const reasonMarker = 'Reason: ';
+  const idx = outputData.indexOf(reasonMarker);
+  if (idx !== -1) {
+    return outputData.substring(idx + reasonMarker.length).trim();
+  }
+  return outputData.replace(HITL_REJECTION_PREFIX, '').replace(/^[:.\s-]+/, '').trim();
+}
+
+export function getAgentOrder(agentName: string): number {
+  const lower = agentName.toLowerCase();
+  if (lower.includes('planner')) return 1;
+  if (lower.includes('research')) return 2;
+  if (lower.includes('analy')) return 3;
+  if (lower.includes('verif')) return 4;
+  if (lower.includes('report')) return 5;
+  return 99;
+}
+
+export function groupRunsIntoAttempts(
+  rawRuns?: AgentRunBrief[] | null,
+  taskStatus: TaskStatus = 'pending'
+): ExecutionAttempt[] {
+  if (!rawRuns || rawRuns.length === 0) return [];
+
+  const sorted = [...rawRuns].sort((a, b) => {
+    const tA = a.started_at ? new Date(a.started_at).getTime() : 0;
+    const tB = b.started_at ? new Date(b.started_at).getTime() : 0;
+    return tA - tB;
+  });
+
+  const rawAttempts: AgentRunBrief[][] = [];
+  let currentChunk: AgentRunBrief[] = [];
+
+  for (const run of sorted) {
+    const currentOrder = getAgentOrder(run.agent_name);
+    const lastOrder =
+      currentChunk.length > 0
+        ? getAgentOrder(currentChunk[currentChunk.length - 1].agent_name)
+        : 0;
+
+    if (currentChunk.length > 0 && (currentOrder === 1 || currentOrder <= lastOrder)) {
+      rawAttempts.push(currentChunk);
+      currentChunk = [];
+    }
+    currentChunk.push(run);
+  }
+
+  if (currentChunk.length > 0) {
+    rawAttempts.push(currentChunk);
+  }
+
+  return rawAttempts.map((chunk, index) => {
+    const isLatest = index === rawAttempts.length - 1;
+    const hasRejection = chunk.some((r) => isHitlRejectionRun(r));
+    const hasFailed = chunk.some((r) => r.status === 'failed' && !isHitlRejectionRun(r));
+    const hasRunning = chunk.some((r) => r.status === 'running');
+    const reporterRun = chunk.find((r) => getAgentOrder(r.agent_name) === 5);
+    const isReporterCompleted = reporterRun?.status === 'completed';
+
+    let status: 'completed' | 'failed' | 'rejected' | 'running';
+    let rejectionReason: string | undefined;
+
+    if (hasRejection) {
+      status = 'rejected';
+      const rejRun = chunk.find((r) => isHitlRejectionRun(r));
+      rejectionReason = extractRejectionReason(rejRun?.output_data);
+    } else if (hasFailed) {
+      status = 'failed';
+    } else if (hasRunning) {
+      status = 'running';
+    } else if (isReporterCompleted) {
+      status = 'completed';
+    } else if (isLatest) {
+      if (taskStatus === 'completed') status = 'completed';
+      else if (taskStatus === 'failed') status = 'failed';
+      else if (taskStatus === 'running' || taskStatus === 'awaiting_approval') status = 'running';
+      else status = 'running';
+    } else {
+      status = 'failed';
+    }
+
+    return {
+      attemptNumber: index + 1,
+      runs: chunk,
+      status,
+      startedAt: chunk[0]?.started_at,
+      completedAt: chunk[chunk.length - 1]?.completed_at,
+      isLatest,
+      rejectionReason,
+    };
+  });
+}
+
+export function deriveTimelineExecutionStates<T extends { id: string; name: string; dbName: string; order: number }>(
+  fiveAgents: T[],
+  latestAttempt: ExecutionAttempt | null,
+  taskStatus: TaskStatus = 'pending'
+): {
+  meta: T;
+  status: DerivedAgentStatus;
+  run?: AgentRunBrief;
+  durationMs?: number;
+  startedAt?: string;
+  completedAt?: string;
+  outputData?: string;
+}[] {
+  const latestRuns = latestAttempt ? latestAttempt.runs : [];
+
+  const rejectionRun = latestRuns.find((r) => isHitlRejectionRun(r));
+  const rejectionOrder = rejectionRun ? getAgentOrder(rejectionRun.agent_name) : null;
+
+  let foundUnfinished = false;
+
+  return fiveAgents.map((agent) => {
+    const run = latestRuns.find(
+      (r) =>
+        r.agent_name.toLowerCase().includes(agent.id) ||
+        r.agent_name.toLowerCase() === agent.dbName.toLowerCase()
+    );
+
+    let status: DerivedAgentStatus = 'waiting';
+
+    if (run) {
+      if (isHitlRejectionRun(run)) {
+        status = 'rejected_at_gate';
+      } else if (run.status === 'completed') {
+        status = 'completed';
+      } else if (run.status === 'failed') {
+        status = 'failed';
+        foundUnfinished = true;
+      } else if (run.status === 'running') {
+        status = 'running';
+        foundUnfinished = true;
+      }
+    } else {
+      if (rejectionOrder !== null && agent.order > rejectionOrder) {
+        status = 'not_executed';
+      } else if (taskStatus === 'awaiting_approval') {
+        if (agent.id === 'verifier') {
+          status = 'awaiting_approval';
+          foundUnfinished = true;
+        } else {
+          status = 'waiting';
+        }
+      } else if (taskStatus === 'running') {
+        if (!foundUnfinished) {
+          status = 'running';
+          foundUnfinished = true;
+        } else {
+          status = 'waiting';
+        }
+      } else if (taskStatus === 'failed') {
+        status = 'waiting';
+      } else {
+        status = 'waiting';
+      }
+    }
+
+    return {
+      meta: agent,
+      status,
+      run,
+      durationMs: run?.execution_time_ms,
+      startedAt: run?.started_at,
+      completedAt: run?.completed_at,
+      outputData: run?.output_data,
+    };
+  });
+}
 import {
   GitBranch,
   Search,
@@ -97,8 +295,6 @@ const FIVE_AGENTS: AgentMeta[] = [
   },
 ];
 
-type DerivedAgentStatus = 'completed' | 'running' | 'awaiting_approval' | 'failed' | 'waiting';
-
 interface AgentExecutionState {
   meta: AgentMeta;
   status: DerivedAgentStatus;
@@ -172,70 +368,20 @@ export const AgentWorkspacePage: React.FC = () => {
     enabled: Boolean(activeTaskId && task?.status === 'completed'),
   });
 
-  // Derive execution state for each of the 5 sequential agents
+  // 1. Group historical runs into distinct execution attempts (BUG-03)
+  const attempts: ExecutionAttempt[] = useMemo(() => {
+    return groupRunsIntoAttempts(task?.agent_runs, task?.status);
+  }, [task?.agent_runs, task?.status]);
+
+  // 2. Select the latest execution attempt (BUG-01)
+  const latestAttempt = useMemo(() => {
+    return attempts.length > 0 ? attempts[attempts.length - 1] : null;
+  }, [attempts]);
+
+  // 3. Derive execution state for each of the 5 sequential agents strictly from the latest attempt
   const executionStates: AgentExecutionState[] = useMemo(() => {
-    const runs = task?.agent_runs || [];
-    const taskStatus = task?.status || 'pending';
-
-    let foundFirstUnfinished = false;
-
-    return FIVE_AGENTS.map((agent) => {
-      // Find matching AgentRun from SQLite database
-      const run = runs.find(
-        (r) =>
-          r.agent_name.toLowerCase().includes(agent.id) ||
-          r.agent_name.toLowerCase() === agent.dbName.toLowerCase()
-      );
-
-      let status: DerivedAgentStatus = 'waiting';
-
-      if (run) {
-        if (run.status === 'completed') {
-          status = 'completed';
-        } else if (run.status === 'failed') {
-          status = 'failed';
-        } else if (run.status === 'running') {
-          status = 'running';
-        }
-      } else {
-        // Derive from sequence and task status
-        if (taskStatus === 'running') {
-          if (!foundFirstUnfinished) {
-            status = 'running';
-            foundFirstUnfinished = true;
-          } else {
-            status = 'waiting';
-          }
-        } else if (taskStatus === 'awaiting_approval') {
-          if (agent.id === 'verifier') {
-            status = 'awaiting_approval';
-            foundFirstUnfinished = true;
-          } else if (agent.id === 'reporter') {
-            status = 'waiting';
-          }
-        } else if (taskStatus === 'failed') {
-          if (!foundFirstUnfinished) {
-            status = 'failed';
-            foundFirstUnfinished = true;
-          } else {
-            status = 'waiting';
-          }
-        } else {
-          status = 'waiting';
-        }
-      }
-
-      return {
-        meta: agent,
-        status,
-        run,
-        durationMs: run?.execution_time_ms,
-        startedAt: run?.started_at,
-        completedAt: run?.completed_at,
-        outputData: run?.output_data,
-      };
-    });
-  }, [task]);
+    return deriveTimelineExecutionStates(FIVE_AGENTS, latestAttempt, task?.status);
+  }, [latestAttempt, task?.status]);
 
   // Selected agent state
   const selectedState = useMemo(() => {
@@ -339,6 +485,20 @@ export const AgentWorkspacePage: React.FC = () => {
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[#E6AA57]/15 text-[#E6AA57] border border-[#E6AA57]/40 animate-pulse">
             <ShieldAlert className="w-3 h-3 text-[#E6AA57]" />
             GATE PAUSED
+          </span>
+        );
+      case 'rejected_at_gate':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[#E6AA57]/15 text-[#E6AA57] border border-[#E6AA57]/40">
+            <ShieldAlert className="w-3 h-3 text-[#E6AA57]" />
+            REJECTED AT GATE
+          </span>
+        );
+      case 'not_executed':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[#1C222E] text-[#9CA3AF] border border-[#252B36]">
+            <Clock className="w-3 h-3 text-[#9CA3AF]" />
+            NOT EXECUTED
           </span>
         );
       case 'failed':
@@ -601,10 +761,17 @@ export const AgentWorkspacePage: React.FC = () => {
       {/* SECTION 2: Five-Agent Sequential Execution Timeline */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-xs font-bold text-[#E5E7EB] uppercase tracking-wider font-mono flex items-center gap-2">
-            <Activity className="w-3.5 h-3.5 text-[#8B7CFF]" />
-            Sequential Execution Timeline (5 Agents)
-          </h2>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h2 className="text-xs font-bold text-[#E5E7EB] uppercase tracking-wider font-mono flex items-center gap-2">
+              <Activity className="w-3.5 h-3.5 text-[#8B7CFF]" />
+              Sequential Execution Timeline (5 Agents)
+            </h2>
+            {attempts.length > 1 && (
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#8B7CFF]/15 text-[#8B7CFF] border border-[#8B7CFF]/30">
+                Attempt {attempts.length} of {attempts.length} (Latest)
+              </span>
+            )}
+          </div>
           <span className="text-[11px] font-mono text-[#9CA3AF]">
             Derived from SQLite AgentRun records
           </span>
@@ -664,19 +831,27 @@ export const AgentWorkspacePage: React.FC = () => {
                 {/* Duration & Execution Timestamp */}
                 <div className="pt-2.5 mt-2 border-t border-[#252B36]/60 flex items-center justify-between font-mono text-[10px] text-[#9CA3AF]">
                   <span>
-                    {agentState.durationMs != null
+                    {agentState.status === 'rejected_at_gate'
+                      ? '0 ms (Gate Marker)'
+                      : agentState.durationMs != null
                       ? `${agentState.durationMs} ms`
                       : agentState.status === 'running'
                       ? 'In progress...'
                       : agentState.status === 'awaiting_approval'
                       ? 'Paused'
+                      : agentState.status === 'not_executed'
+                      ? 'Aborted'
                       : '—'}
                   </span>
                   <span>
-                    {agentState.completedAt
+                    {agentState.status === 'rejected_at_gate'
+                      ? 'Governance Aborted'
+                      : agentState.completedAt
                       ? timeAgo(agentState.completedAt)
                       : agentState.startedAt
                       ? 'Started'
+                      : agentState.status === 'not_executed'
+                      ? 'Not run'
                       : 'Not run'}
                   </span>
                 </div>
@@ -780,6 +955,34 @@ export const AgentWorkspacePage: React.FC = () => {
                 </p>
                 <p className="text-[11px] text-[#E5E7EB] max-w-md mx-auto">
                   The Verification Agent will resume immediately once human authorization is approved via the gate control banner above.
+                </p>
+              </div>
+            ) : selectedState.status === 'rejected_at_gate' ? (
+              <div className="p-5 rounded bg-[#E6AA57]/10 border border-[#E6AA57]/40 space-y-3 font-mono">
+                <div className="flex items-center gap-2 text-[#E6AA57] text-xs font-semibold">
+                  <ShieldAlert className="w-4 h-4" />
+                  HUMAN-IN-THE-LOOP GOVERNANCE REJECTION
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] text-[#9CA3AF] uppercase">Rejection Reason:</span>
+                  <p className="text-xs text-[#E5E7EB] bg-[#0B0D12] p-3 rounded border border-[#252B36] font-sans">
+                    {extractRejectionReason(selectedState.outputData) || 'Task rejected by Human-in-the-Loop governance.'}
+                  </p>
+                </div>
+                <div className="p-3 rounded bg-[#0B0D12] border border-[#252B36] text-[11px] text-[#9CA3AF] space-y-1">
+                  <p className="text-[#E5E7EB] font-medium">Verification Model Execution Bypassed</p>
+                  <p>
+                    This task was aborted by a human operator prior to Verification Agent execution.
+                    The Verifier LLM was not invoked, and 0 inference tokens were consumed.
+                  </p>
+                </div>
+              </div>
+            ) : selectedState.status === 'not_executed' ? (
+              <div className="p-8 text-center space-y-2 rounded bg-[#11141B] border border-[#252B36]">
+                <XCircle className="w-6 h-6 text-[#9CA3AF]/40 mx-auto" />
+                <p className="text-xs font-mono text-[#E5E7EB]">Agent Not Executed</p>
+                <p className="text-[11px] text-[#9CA3AF] max-w-sm mx-auto">
+                  This agent was bypassed and never executed because workflow progression was halted at the governance gate.
                 </p>
               </div>
             ) : selectedState.status === 'failed' ? (
@@ -923,32 +1126,116 @@ export const AgentWorkspacePage: React.FC = () => {
           </div>
 
           <div className="rounded-lg bg-[#0B0D12] border border-[#252B36] p-3 text-xs font-mono space-y-3 max-h-[520px] overflow-y-auto">
-            {task?.agent_runs && task.agent_runs.length > 0 ? (
-              <div className="space-y-3">
-                {task.agent_runs.map((run) => (
+            {attempts.length > 0 ? (
+              <div className="space-y-4">
+                {attempts.map((attempt) => (
                   <div
-                    key={run.id}
-                    className="p-2.5 rounded bg-[#151922] border border-[#252B36] space-y-1.5"
+                    key={attempt.attemptNumber}
+                    className={`rounded-lg border p-3 space-y-2.5 ${
+                      attempt.isLatest
+                        ? 'bg-[#151922] border-[#343C4B]'
+                        : 'bg-[#11141B]/80 border-[#252B36] opacity-85'
+                    }`}
                   >
-                    <div className="flex items-center justify-between text-[11px]">
-                      <span className="font-semibold text-[#8B7CFF]">
-                        {run.agent_name}
-                      </span>
-                      <span className="text-[#9CA3AF] text-[10px]">
-                        {timeAgo(run.completed_at || run.started_at)}
-                      </span>
+                    {/* Attempt Header */}
+                    <div className="flex items-center justify-between pb-2 border-b border-[#252B36]">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-[#E5E7EB]">
+                          Attempt #{attempt.attemptNumber}
+                        </span>
+                        {attempt.isLatest && (
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#8B7CFF]/20 text-[#8B7CFF] border border-[#8B7CFF]/40 font-mono">
+                            LATEST
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-[#9CA3AF]">
+                          {attempt.runs.length} {attempt.runs.length === 1 ? 'agent' : 'agents'}
+                        </span>
+                        {attempt.status === 'completed' && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#36B98A]/15 text-[#36B98A] border border-[#36B98A]/30">
+                            COMPLETED
+                          </span>
+                        )}
+                        {attempt.status === 'rejected' && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#E6AA57]/15 text-[#E6AA57] border border-[#E6AA57]/30">
+                            REJECTED
+                          </span>
+                        )}
+                        {attempt.status === 'failed' && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#E16D78]/15 text-[#E16D78] border border-[#E16D78]/30">
+                            FAILED
+                          </span>
+                        )}
+                        {attempt.status === 'running' && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#55C7D9]/15 text-[#55C7D9] border border-[#55C7D9]/30">
+                            RUNNING
+                          </span>
+                        )}
+                      </div>
                     </div>
 
-                    <div className="flex items-center justify-between text-[10px] text-[#9CA3AF]">
-                      <span>STATUS: <span className="text-[#36B98A]">{run.status.toUpperCase()}</span></span>
-                      <span>{run.execution_time_ms ? `${run.execution_time_ms} ms` : '—'}</span>
-                    </div>
+                    {/* Attempt Runs Stream */}
+                    <div className="space-y-2">
+                      {attempt.runs.map((run) => {
+                        const isRejection = isHitlRejectionRun(run);
+                        return (
+                          <div
+                            key={run.id}
+                            className="p-2 rounded bg-[#0B0D12] border border-[#252B36]/80 space-y-1"
+                          >
+                            <div className="flex items-center justify-between text-[11px]">
+                              <span className="font-medium text-[#8B7CFF]">
+                                {run.agent_name}
+                              </span>
+                              <span className="text-[#9CA3AF] text-[10px]">
+                                {timeAgo(run.completed_at || run.started_at)}
+                              </span>
+                            </div>
 
-                    {run.input_data && (
-                      <p className="text-[10px] text-[#9CA3AF] truncate">
-                        <span className="text-[#9CA3AF]/60">INPUT:</span> {run.input_data}
-                      </p>
-                    )}
+                            <div className="flex items-center justify-between text-[10px] text-[#9CA3AF]">
+                              <span>
+                                STATUS:{' '}
+                                {isRejection ? (
+                                  <span className="text-[#E6AA57]">REJECTED AT GATE</span>
+                                ) : (
+                                  <span
+                                    className={
+                                      run.status === 'completed'
+                                        ? 'text-[#36B98A]'
+                                        : run.status === 'failed'
+                                        ? 'text-[#E16D78]'
+                                        : 'text-[#55C7D9]'
+                                    }
+                                  >
+                                    {run.status.toUpperCase()}
+                                  </span>
+                                )}
+                              </span>
+                              <span>
+                                {isRejection
+                                  ? '0 ms (Marker)'
+                                  : run.execution_time_ms
+                                  ? `${run.execution_time_ms} ms`
+                                  : '—'}
+                              </span>
+                            </div>
+
+                            {isRejection ? (
+                              <p className="text-[10px] text-[#E6AA57] truncate">
+                                <span className="text-[#9CA3AF]/60">REASON:</span>{' '}
+                                {extractRejectionReason(run.output_data)}
+                              </p>
+                            ) : run.input_data ? (
+                              <p className="text-[10px] text-[#9CA3AF] truncate">
+                                <span className="text-[#9CA3AF]/60">INPUT:</span> {run.input_data}
+                              </p>
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -970,8 +1257,12 @@ export const AgentWorkspacePage: React.FC = () => {
                   <span className="text-[#E5E7EB]">{timeAgo(task.created_at)}</span>
                 </div>
                 <div className="flex justify-between">
+                  <span>Execution Attempts:</span>
+                  <span className="text-[#8B7CFF] font-semibold">{attempts.length}</span>
+                </div>
+                <div className="flex justify-between">
                   <span>Total Agent Runs:</span>
-                  <span className="text-[#55C7D9]">{task.agent_runs?.length || 0} / 5</span>
+                  <span className="text-[#55C7D9]">{task.agent_runs?.length || 0}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Current Task Status:</span>
