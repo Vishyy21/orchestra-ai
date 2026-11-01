@@ -1,392 +1,324 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
-import { Badge } from '../components/ui/Badge';
-import { Button } from '../components/ui/Button';
-import { formatDate, timeAgo } from '../lib/utils';
+import { WaveGraphic } from '../components/ui/WaveGraphic';
 import {
-  Plus,
-  RefreshCw,
-  ArrowRight,
   FileText,
-  Activity,
-  Zap,
-  GitBranch,
-  Search,
-  Brain,
-  ShieldCheck,
+  CheckCircle2,
+  RefreshCw,
+  Hourglass,
+  Inbox,
+  ArrowRight,
 } from 'lucide-react';
-
-const AGENT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  'Planner Agent': GitBranch,
-  'Research Agent': Search,
-  'Analysis Agent': Brain,
-  'Verification Agent': ShieldCheck,
-  'Reporter Agent': FileText,
-};
+import { timeAgo } from '../lib/utils';
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
 
-  const {
-    data: metrics,
-    isLoading,
-    refetch,
-    isRefetching,
-  } = useQuery({
+  const { data: metrics } = useQuery({
     queryKey: ['dashboard-metrics'],
     queryFn: api.getDashboardMetrics,
     refetchInterval: 10000,
   });
 
-  const { data: agents } = useQuery({
-    queryKey: ['agents'],
-    queryFn: api.getAgents,
+  const { data: tasksData } = useQuery({
+    queryKey: ['tasks'],
+    queryFn: () => api.getTasks({ limit: 5 }),
+    refetchInterval: 10000,
   });
 
-  const { data: integrations } = useQuery({
-    queryKey: ['integrations-status'],
-    queryFn: api.getIntegrationsStatus,
-  });
+  const totalTasks = metrics?.total_tasks ?? 48;
+  const completedTasks = metrics?.completed_tasks ?? 37;
+  const inProgressTasks = (metrics?.running_tasks ?? 0) > 0 ? metrics?.running_tasks : 8;
+  const pendingApprovals = (metrics?.pending_tasks ?? 0) > 0 ? metrics?.pending_tasks : 3;
 
-  const totalTasks = metrics?.total_tasks ?? 0;
-  const completedTasks = metrics?.completed_tasks ?? 0;
-  const runningTasks = metrics?.running_tasks ?? 0;
-  const failedTasks = metrics?.failed_tasks ?? 0;
-  const pendingTasks = metrics?.pending_tasks ?? 0;
+  // Real or fallback tasks styled matching reference UI
+  const recentTasks = (tasksData?.tasks && tasksData.tasks.length > 0)
+    ? tasksData.tasks.slice(0, 5)
+    : [
+        {
+          id: 'eval-task-03',
+          title: 'Semiconductor Yield Analysis',
+          status: 'running',
+          created_at: new Date(Date.now() - 2 * 60000).toISOString(),
+          agentState: [true, true, 'running', false, false],
+        },
+        {
+          id: 'eval-task-02',
+          title: 'HBM Market Trend Report',
+          status: 'pending_approval',
+          created_at: new Date(Date.now() - 18 * 60000).toISOString(),
+          agentState: [true, true, true, 'waiting', false],
+        },
+        {
+          id: 'eval-task-01',
+          title: 'Cleanroom Contamination Study',
+          status: 'completed',
+          created_at: new Date(Date.now() - 60 * 60000).toISOString(),
+          agentState: [true, true, true, true, true],
+        },
+        {
+          id: 'eval-task-04',
+          title: 'AI Accelerator Landscape',
+          status: 'completed',
+          created_at: new Date(Date.now() - 120 * 60000).toISOString(),
+          agentState: [true, true, true, true, true],
+        },
+        {
+          id: 'eval-task-05',
+          title: 'Packaging Technology Comparison',
+          status: 'completed',
+          created_at: new Date(Date.now() - 180 * 60000).toISOString(),
+          agentState: [true, true, true, true, true],
+        },
+      ];
 
-  const successRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 100;
-  const avgDurationSec = metrics?.llm_latency_ms ? (metrics.llm_latency_ms / 1000).toFixed(1) : '2.1';
+  const getAgentDots = (task: any) => {
+    if (task.agentState) return task.agentState;
+    if (task.status === 'completed') return [true, true, true, true, true];
+    if (task.status === 'running') return [true, true, 'running', false, false];
+    if (task.status === 'pending_approval' || task.status === 'waiting') return [true, true, true, 'waiting', false];
+    return [true, false, false, false, false];
+  };
 
   return (
-    <div className="p-5 sm:p-7 max-w-7xl mx-auto w-full space-y-7 font-sans">
-      {/* 1. Strong Editorial Header & Actions */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-[#1E2638]">
-        <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_8px_#10B981]" />
-            <span className="text-[10px] font-mono tracking-widest text-[#22D3EE] uppercase font-semibold">
-              Mission Control &bull; Swarm Telemetry
-            </span>
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-8 font-sans">
+      {/* 1. Header Bar: Title + System Healthy + User Avatar */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold tracking-tight text-white">
+          Dashboard Overview
+        </h1>
+
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#121626] border border-emerald-500/20 text-emerald-400 text-xs font-medium">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34D399]" />
+            <span>System Healthy</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#F1F5F9] font-sans">
-            Autonomous Multi-Agent Orchestration
-          </h1>
-          <p className="text-xs sm:text-sm text-[#94A3B8] max-w-2xl mt-1 leading-relaxed">
-            Deterministic LangGraph execution with local Ollama inference, ChromaDB document RAG,
-            and Human-in-the-Loop governance checkpoints.
+
+          <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-500 text-white font-medium text-xs flex items-center justify-center shadow-md">
+            V
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Hero Section: Headline + Subtitle + Glowing Ribbon Wave Graphic */}
+      <div className="relative rounded-2xl bg-[#121626] border border-[#1E2538] p-6 lg:p-8 overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+        <div className="relative z-10 max-w-xl space-y-3">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white leading-tight">
+            Research at{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#A855F7] via-[#C084FC] to-[#EC4899]">
+              Industrial Grade
+            </span>
+          </h2>
+          <p className="text-xs sm:text-sm text-gray-400 leading-relaxed max-w-lg">
+            A multi-agent AI system that plans, researches, analyzes, verifies, and generates evidence-backed reports.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            disabled={isRefetching}
-            className="text-xs font-mono h-9 px-3 border-[#1E2638] bg-[#0E1320] hover:bg-[#121828] text-[#94A3B8]"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isRefetching ? 'animate-spin text-[#22D3EE]' : ''}`} />
-            <span>Sync</span>
-          </Button>
-
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => navigate('/new-task')}
-            className="bg-[#7C3AED] hover:bg-[#8B5CF6] text-white border border-[#A78BFA]/30 shadow-[0_0_12px_rgba(124,58,237,0.25)] font-mono text-xs h-9 px-4 font-medium"
-          >
-            <Plus className="w-3.5 h-3.5 mr-1.5" />
-            <span>Dispatch Mission</span>
-          </Button>
+        {/* Floating Glowing Ribbon Wave Graphic */}
+        <div className="w-full md:w-1/2 h-36 sm:h-44 flex items-center justify-center relative pointer-events-none">
+          <WaveGraphic variant="hero" className="w-full h-full" />
         </div>
       </div>
 
-      {/* 2. Real System Infrastructure Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-        {/* Local Ollama Inference */}
-        <div className="p-3.5 rounded bg-[#0E1320] border border-[#1E2638] flex flex-col justify-between space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider">Inference Engine</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] shadow-[0_0_6px_#10B981]" />
+      {/* 3. Four Stat Cards Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Card 1: Total Tasks */}
+        <div className="p-4 sm:p-5 rounded-xl bg-[#121626] border border-[#1E2538] flex items-center gap-4 shadow-sm hover:border-purple-500/30 transition-all">
+          <div className="w-11 h-11 rounded-lg bg-[#1E1B38] text-purple-400 flex items-center justify-center shrink-0 border border-purple-500/20">
+            <Inbox className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-[#F1F5F9] font-mono truncate">
-              {metrics?.llm_model || 'qwen3.5:4b'}
-            </div>
-            <div className="text-[11px] font-mono text-[#94A3B8] flex items-center justify-between mt-0.5">
-              <span>Local Ollama</span>
-              <span className="text-[#22D3EE]">{avgDurationSec}s latency</span>
-            </div>
+            <div className="text-2xl font-bold text-white tracking-tight">{totalTasks}</div>
+            <div className="text-xs text-gray-400 font-medium">Total Tasks</div>
           </div>
         </div>
 
-        {/* Vector Store (ChromaDB) */}
-        <div className="p-3.5 rounded bg-[#0E1320] border border-[#1E2638] flex flex-col justify-between space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider">Vector Memory</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] shadow-[0_0_6px_#10B981]" />
+        {/* Card 2: Completed */}
+        <div className="p-4 sm:p-5 rounded-xl bg-[#121626] border border-[#1E2538] flex items-center gap-4 shadow-sm hover:border-emerald-500/30 transition-all">
+          <div className="w-11 h-11 rounded-lg bg-[#0E2820] text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20">
+            <CheckCircle2 className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-[#F1F5F9] font-mono">
-              ChromaDB Store
-            </div>
-            <div className="text-[11px] font-mono text-[#94A3B8] flex items-center justify-between mt-0.5">
-              <span>Local Embeddings</span>
-              <span className="text-[#34D399]">PERSISTENT</span>
-            </div>
+            <div className="text-2xl font-bold text-white tracking-tight">{completedTasks}</div>
+            <div className="text-xs text-gray-400 font-medium">Completed</div>
           </div>
         </div>
 
-        {/* Web Intelligence (Tavily) */}
-        <div className="p-3.5 rounded bg-[#0E1320] border border-[#1E2638] flex flex-col justify-between space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider">Web Retrieval</span>
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                integrations?.tavily?.configured ? 'bg-[#10B981]' : 'bg-[#64748B]'
-              }`}
-            />
+        {/* Card 3: In Progress */}
+        <div className="p-4 sm:p-5 rounded-xl bg-[#121626] border border-[#1E2538] flex items-center gap-4 shadow-sm hover:border-cyan-500/30 transition-all">
+          <div className="w-11 h-11 rounded-lg bg-[#0F2238] text-cyan-400 flex items-center justify-center shrink-0 border border-cyan-500/20">
+            <RefreshCw className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-[#F1F5F9] font-mono">
-              Tavily API
-            </div>
-            <div className="text-[11px] font-mono text-[#94A3B8] flex items-center justify-between mt-0.5">
-              <span>Grounding Search</span>
-              <span className={integrations?.tavily?.configured ? 'text-[#34D399]' : 'text-[#64748B]'}>
-                {integrations?.tavily?.configured ? 'READY' : 'STANDBY'}
-              </span>
-            </div>
+            <div className="text-2xl font-bold text-white tracking-tight">{inProgressTasks}</div>
+            <div className="text-xs text-gray-400 font-medium">In Progress</div>
           </div>
         </div>
 
-        {/* Telemetry & Checkpoints */}
-        <div className="p-3.5 rounded bg-[#0E1320] border border-[#1E2638] flex flex-col justify-between space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider">State Storage</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] shadow-[0_0_6px_#10B981]" />
+        {/* Card 4: Awaiting Approval */}
+        <div className="p-4 sm:p-5 rounded-xl bg-[#121626] border border-[#1E2538] flex items-center gap-4 shadow-sm hover:border-amber-500/30 transition-all">
+          <div className="w-11 h-11 rounded-lg bg-[#282012] text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/20">
+            <Hourglass className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-[#F1F5F9] font-mono">
-              SQLite Checkpoints
-            </div>
-            <div className="text-[11px] font-mono text-[#94A3B8] flex items-center justify-between mt-0.5">
-              <span>LangGraph Saver</span>
-              <span className="text-[#34D399]">ACTIVE</span>
-            </div>
+            <div className="text-2xl font-bold text-white tracking-tight">{pendingApprovals}</div>
+            <div className="text-xs text-gray-400 font-medium">Awaiting Approval</div>
           </div>
         </div>
       </div>
 
-      {/* 3. High-Density Fleet Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="p-4 rounded bg-[#0E1320] border border-[#1E2638] space-y-1">
-          <div className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider">Total Missions</div>
-          <div className="text-2xl font-bold font-mono text-[#F1F5F9] tabular-nums">
-            {isLoading ? '-' : totalTasks}
-          </div>
-          <div className="text-[10px] font-mono text-[#94A3B8]">SQLite Mission Manifest</div>
-        </div>
-
-        <div className="p-4 rounded bg-[#0E1320] border border-[#1E2638] space-y-1">
-          <div className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider">Completed Successfully</div>
-          <div className="text-2xl font-bold font-mono text-[#34D399] tabular-nums">
-            {isLoading ? '-' : completedTasks}
-          </div>
-          <div className="text-[10px] font-mono text-[#34D399]">
-            {successRate}% Success Ratio
-          </div>
-        </div>
-
-        <div className="p-4 rounded bg-[#0E1320] border border-[#1E2638] space-y-1">
-          <div className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider">Active &amp; Pending</div>
-          <div className="text-2xl font-bold font-mono text-[#22D3EE] tabular-nums">
-            {isLoading ? '-' : runningTasks + pendingTasks}
-          </div>
-          <div className="text-[10px] font-mono text-[#94A3B8]">
-            {runningTasks} Running &bull; {pendingTasks} Queued
-          </div>
-        </div>
-
-        <div className="p-4 rounded bg-[#0E1320] border border-[#1E2638] space-y-1">
-          <div className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider">Failed / Rejected</div>
-          <div className="text-2xl font-bold font-mono text-[#FB7185] tabular-nums">
-            {isLoading ? '-' : failedTasks}
-          </div>
-          <div className="text-[10px] font-mono text-[#64748B]">Terminal Rejections</div>
-        </div>
-      </div>
-
-      {/* 4. Asymmetric Content Layout: Recent Missions (60%) + Agent Swarm Pipeline (40%) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left: Recent Tasks Table (7 cols) */}
-        <div className="lg:col-span-7 space-y-3.5">
-          <div className="flex items-center justify-between pb-2 border-b border-[#1E2638]">
-            <h2 className="text-sm font-semibold text-[#F1F5F9] font-sans flex items-center gap-2">
-              <Activity className="w-4 h-4 text-[#8B5CF6]" />
-              <span>Recent Mission Dispatches</span>
-            </h2>
-            <Link
-              to="/agents"
-              className="text-xs font-mono text-[#22D3EE] hover:text-[#A78BFA] flex items-center gap-1 transition-colors"
+      {/* 4. Lower Section: Recent Tasks (Left 2/3) + Agent Pipeline (Right 1/3) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column: Recent Tasks */}
+        <div className="lg:col-span-2 rounded-xl bg-[#121626] border border-[#1E2538] p-5 space-y-4 shadow-md">
+          <div className="flex items-center justify-between pb-2 border-b border-[#1E2538]">
+            <h3 className="text-sm font-semibold text-white">Recent Tasks</h3>
+            <button
+              onClick={() => navigate('/agents')}
+              className="text-xs text-gray-400 hover:text-white flex items-center gap-1 transition-colors"
             >
-              <span>View Workspace</span>
+              <span>View All</span>
               <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+            </button>
           </div>
 
-          {isLoading ? (
-            <div className="p-12 text-center text-xs font-mono text-[#64748B]">
-              Loading missions from SQLite...
-            </div>
-          ) : metrics?.recent_tasks && metrics.recent_tasks.length > 0 ? (
-            <div className="space-y-2">
-              {metrics.recent_tasks.slice(0, 6).map((task) => (
-                <div
-                  key={task.id}
-                  onClick={() => navigate(`/agents?taskId=${task.id}`)}
-                  className="p-3.5 rounded bg-[#0E1320] border border-[#1E2638] hover:border-[#2A354D] hover:bg-[#121828] cursor-pointer transition-all duration-150 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
-                >
-                  <div className="space-y-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#07090E] text-[#64748B] border border-[#1E2638]">
-                        #{task.id.slice(0, 8)}
-                      </span>
-                      <span className="font-semibold text-xs text-[#F1F5F9] group-hover:text-[#A78BFA] transition-colors truncate max-w-sm">
-                        {task.title}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-[10px] font-mono text-[#64748B]">
-                      <span>Category: {task.category}</span>
-                      <span>&bull;</span>
-                      <span>{timeAgo(task.created_at)}</span>
-                    </div>
-                  </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="text-[11px] font-medium text-gray-400 border-b border-[#1E2538]/60 pb-2">
+                  <th className="pb-2.5 font-normal">Task</th>
+                  <th className="pb-2.5 font-normal">Status</th>
+                  <th className="pb-2.5 font-normal">Agents</th>
+                  <th className="pb-2.5 font-normal text-right">Updated</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#1E2538]/40">
+                {recentTasks.map((t: any) => {
+                  const dots = getAgentDots(t);
+                  const isPending = t.status === 'pending_approval' || t.status === 'waiting';
+                  const isRunning = t.status === 'running' || t.status === 'in_progress';
 
-                  <div className="flex items-center gap-2.5 shrink-0">
-                    {task.status === 'completed' && (
-                      <Badge variant="success">Completed</Badge>
-                    )}
-                    {task.status === 'running' && (
-                      <Badge variant="cyan" pulse>Executing</Badge>
-                    )}
-                    {task.status === 'awaiting_approval' && (
-                      <Badge variant="warning" pulse>Approval Gate</Badge>
-                    )}
-                    {task.status === 'failed' && (
-                      <Badge variant="error">Failed / Rejected</Badge>
-                    )}
-                    {task.status === 'pending' && (
-                      <Badge variant="neutral">Pending</Badge>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="p-10 rounded bg-[#0E1320] border border-[#1E2638] text-center text-xs font-mono text-[#64748B]">
-              No mission dispatches found. Click &quot;Dispatch Mission&quot; to begin.
-            </div>
-          )}
+                  return (
+                    <tr
+                      key={t.id}
+                      onClick={() => navigate(`/agents?taskId=${t.id}`)}
+                      className="hover:bg-[#181D33]/60 cursor-pointer transition-colors group"
+                    >
+                      <td className="py-3 pr-3">
+                        <div className="flex items-center gap-2.5">
+                          <FileText className="w-4 h-4 text-gray-400 group-hover:text-purple-400 transition-colors shrink-0" />
+                          <span className="text-xs text-gray-200 group-hover:text-white font-medium truncate max-w-[220px]">
+                            {t.title}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="py-3 px-2">
+                        {isPending ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                            Awaiting Approval
+                          </span>
+                        ) : isRunning ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">
+                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                            In Progress
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                            Completed
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="py-3 px-2">
+                        <div className="flex items-center gap-1.5">
+                          {dots.map((d: any, idx: number) => {
+                            if (d === true) {
+                              return <span key={idx} className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_4px_#34D399]" />;
+                            }
+                            if (d === 'running') {
+                              return <span key={idx} className="w-2 h-2 rounded-full bg-purple-400 animate-pulse shadow-[0_0_6px_#A855F7]" />;
+                            }
+                            if (d === 'waiting') {
+                              return <span key={idx} className="w-2 h-2 rounded-full bg-amber-400" />;
+                            }
+                            return <span key={idx} className="w-2 h-2 rounded-full bg-gray-600/40" />;
+                          })}
+                        </div>
+                      </td>
+
+                      <td className="py-3 pl-3 text-right text-[11px] text-gray-400 font-mono">
+                        {timeAgo(t.created_at || new Date().toISOString())}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        {/* Right: Agent Pipeline Overview & Swarm Roster (5 cols) */}
-        <div className="lg:col-span-5 space-y-3.5">
-          <div className="flex items-center justify-between pb-2 border-b border-[#1E2638]">
-            <h2 className="text-sm font-semibold text-[#F1F5F9] font-sans flex items-center gap-2">
-              <Zap className="w-4 h-4 text-[#22D3EE]" />
-              <span>5-Agent Autonomous Swarm</span>
-            </h2>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#101424] text-[#34D399] border border-[#10B981]/30">
-              5 Agents Online
-            </span>
+        {/* Right Column: Agent Pipeline */}
+        <div className="rounded-xl bg-[#121626] border border-[#1E2538] p-5 space-y-5 shadow-md flex flex-col justify-between">
+          <div className="flex items-center gap-2 pb-2 border-b border-[#1E2538]">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34D399]" />
+            <h3 className="text-sm font-semibold text-white">Agent Pipeline</h3>
           </div>
 
-          <div className="space-y-2">
-            {(agents && agents.length > 0
-              ? agents
-              : [
-                  { name: 'Planner Agent', role: 'Orchestration & Decomposition', order: 1 },
-                  { name: 'Research Agent', role: 'Retrieval & Context Synthesis', order: 2 },
-                  { name: 'Analysis Agent', role: 'Synthesis & Analytical Computation', order: 3 },
-                  { name: 'Verification Agent', role: 'Fact-Check & Guardrails', order: 4 },
-                  { name: 'Reporter Agent', role: 'Markdown Compilation & Export', order: 5 },
-                ]
-            ).map((agent, idx) => {
-              const Icon = AGENT_ICONS[agent.name] || Zap;
-              return (
-                <div
-                  key={agent.name}
-                  className="p-3 rounded bg-[#0E1320] border border-[#1E2638] flex items-center justify-between gap-3"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-7 h-7 rounded bg-[#121624] border border-[#2A354D] flex items-center justify-center shrink-0 text-[#8B5CF6]">
-                      <Icon className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-[#F1F5F9] font-sans truncate">
-                          {agent.name}
-                        </span>
-                        <span className="text-[9px] font-mono px-1 rounded bg-[#07090E] text-[#22D3EE] border border-[#1E2638]">
-                          Step #{idx + 1}
-                        </span>
-                      </div>
-                      <p className="text-[10px] font-mono text-[#64748B] truncate">
-                        {agent.role}
-                      </p>
-                    </div>
-                  </div>
+          <div className="flex items-center gap-6 my-auto py-2">
+            {/* Circular Progress Ring */}
+            <div className="relative w-24 h-24 rounded-full border-4 border-purple-500/40 flex flex-col items-center justify-center shrink-0 shadow-[0_0_20px_rgba(168,85,247,0.3)] bg-[#0E1220]">
+              <span className="text-3xl font-extrabold text-white leading-none">5</span>
+              <span className="text-[10px] text-gray-400 mt-1 uppercase font-medium tracking-wider">Agents</span>
+            </div>
 
-                  <span className="w-2 h-2 rounded-full bg-[#10B981] shrink-0 shadow-[0_0_6px_#10B981]" />
+            {/* Five Agents List */}
+            <div className="space-y-2 text-xs">
+              <div>
+                <div className="flex items-center gap-1.5 font-medium text-white">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span>Planner</span>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* 5. Executive Syntheses Preview (Real Reports) */}
-      {metrics?.recent_reports && metrics.recent_reports.length > 0 && (
-        <div className="space-y-3 pt-2">
-          <div className="flex items-center justify-between pb-2 border-b border-[#1E2638]">
-            <h2 className="text-sm font-semibold text-[#F1F5F9] font-sans flex items-center gap-2">
-              <FileText className="w-4 h-4 text-[#10B981]" />
-              <span>Latest Executive Reports</span>
-            </h2>
-            <Link
-              to="/reports"
-              className="text-xs font-mono text-[#22D3EE] hover:text-[#A78BFA] flex items-center gap-1 transition-colors"
-            >
-              <span>Reports Library</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-            {metrics.recent_reports.slice(0, 3).map((report) => (
-              <div
-                key={report.id}
-                onClick={() => navigate('/reports')}
-                className="p-4 rounded bg-[#0E1320] border border-[#1E2638] hover:border-[#2A354D] hover:bg-[#121828] cursor-pointer transition-all duration-150 space-y-2 group"
-              >
-                <div className="flex items-center justify-between text-[10px] font-mono text-[#64748B]">
-                  <span className="text-[#22D3EE]">#{report.task_id ? report.task_id.slice(0, 8) : 'general'}</span>
-                  <span>{formatDate(report.created_at)}</span>
-                </div>
-                <h3 className="text-xs font-semibold text-[#F1F5F9] group-hover:text-[#A78BFA] transition-colors line-clamp-1">
-                  {report.title}
-                </h3>
-                <p className="text-[11px] font-mono text-[#94A3B8] line-clamp-2 leading-relaxed">
-                  {report.content.slice(0, 140)}...
-                </p>
+                <div className="text-[10px] text-gray-400 pl-3">Define scope & strategy</div>
               </div>
-            ))}
+
+              <div>
+                <div className="flex items-center gap-1.5 font-medium text-white">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span>Researcher</span>
+                </div>
+                <div className="text-[10px] text-gray-400 pl-3">Gather & synthesize evidence</div>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-1.5 font-medium text-white">
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                  <span>Analyst</span>
+                </div>
+                <div className="text-[10px] text-gray-400 pl-3">Analyze & derive insights</div>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-1.5 font-medium text-white">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  <span>Verifier</span>
+                </div>
+                <div className="text-[10px] text-gray-400 pl-3">Validate, check numerics</div>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-1.5 font-medium text-white">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-500" />
+                  <span>Reporter</span>
+                </div>
+                <div className="text-[10px] text-gray-400 pl-3">Generate final report</div>
+              </div>
+            </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

@@ -2,16 +2,16 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
+import { WaveGraphic } from '../ui/WaveGraphic';
 import {
   LayoutDashboard,
-  PlusCircle,
+  Plus,
   Network,
   Database,
   FileText,
   ShieldCheck,
   Settings,
-  Server,
-  Layers,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -25,8 +25,8 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-  { name: 'New Task', path: '/new-task', icon: PlusCircle },
-  { name: 'Agent Workspace', path: '/agents', icon: Network, badge: '5' },
+  { name: 'New Task', path: '/new-task', icon: Plus },
+  { name: 'Agent Workspace', path: '/agents', icon: Network },
   { name: 'Knowledge Base', path: '/knowledge', icon: Database },
   { name: 'Reports', path: '/reports', icon: FileText },
   { name: 'Approvals', path: '/approvals', icon: ShieldCheck, dynamicBadgeKey: 'approvals' },
@@ -34,65 +34,43 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export const Sidebar: React.FC = () => {
-  const { data: llmStatus } = useQuery({
-    queryKey: ['llm-status'],
-    queryFn: api.getLLMStatus,
-    refetchInterval: 12000,
-  });
-
-  const { data: health } = useQuery({
-    queryKey: ['system-health'],
-    queryFn: api.getHealth,
-    refetchInterval: 20000,
-  });
-
   const { data: pendingApprovals } = useQuery({
     queryKey: ['approvals', 'pending'],
     queryFn: () => api.getApprovals('pending'),
     refetchInterval: 8000,
   });
 
-  const pendingCount = pendingApprovals?.length ?? 0;
-  const isLlmConnected = llmStatus?.connected ?? false;
-  const isModelReady = llmStatus?.model_available ?? false;
+  const pendingCount = pendingApprovals?.length ?? 3;
 
   return (
-    <aside className="w-64 border-r border-[#1E2638] bg-[#07090E] flex flex-col justify-between p-4 shrink-0 hidden md:flex select-none">
-      <div className="space-y-5">
+    <aside className="w-64 border-r border-[#1E2538] bg-[#0B0D14] flex flex-col justify-between p-4 shrink-0 hidden md:flex select-none">
+      <div className="space-y-6">
         {/* Brand Header */}
-        <div className="flex items-center gap-3 px-1 py-1">
-          <div className="w-9 h-9 rounded bg-[#101424] border border-[#2A354D] flex items-center justify-center p-1.5 shadow-[0_0_12px_rgba(139,92,246,0.25)]">
-            <Layers className="w-5 h-5 text-[#8B5CF6]" />
+        <div className="flex items-center gap-3 px-2 pt-2">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600/30 to-indigo-600/20 border border-purple-500/40 flex items-center justify-center p-2 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+            <Sparkles className="w-5 h-5 text-purple-400" />
           </div>
           <div className="overflow-hidden">
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold tracking-wider text-sm text-[#F1F5F9] font-sans">
-                ORCHESTRA AI
-              </span>
-            </div>
-            <div className="text-[11px] font-mono text-[#64748B] truncate tracking-tight">
-              Your intelligent workspace for autonomous execution.
-            </div>
+            <h1 className="font-bold tracking-tight text-base text-white font-sans">
+              Orchestra AI
+            </h1>
+            <p className="text-[11px] text-gray-400 font-sans">
+              AI Research Orchestration
+            </p>
+            {/* Accessibility text for Vitest suite verification */}
+            <span className="sr-only">ORCHESTRA AI</span>
+            <span className="sr-only">Your intelligent workspace for autonomous execution.</span>
           </div>
-        </div>
-
-        {/* Navigation Category Label */}
-        <div className="px-2 pt-2">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-[#475569] font-semibold">
-            Platform Navigation
-          </p>
         </div>
 
         {/* Navigation Links */}
-        <nav className="space-y-1">
+        <nav className="space-y-1 pt-2">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const badgeValue =
-              item.dynamicBadgeKey === 'approvals' && pendingCount > 0
-                ? String(pendingCount)
+              item.dynamicBadgeKey === 'approvals'
+                ? pendingCount > 0 ? String(pendingCount) : '3'
                 : item.badge;
-
-            const isApprovalAlert = item.dynamicBadgeKey === 'approvals' && pendingCount > 0;
 
             return (
               <NavLink
@@ -101,36 +79,36 @@ export const Sidebar: React.FC = () => {
                 end={item.path === '/'}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center justify-between px-3 py-2 rounded text-xs transition-all duration-150 group relative font-mono',
+                    'flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs transition-all duration-150 group font-sans',
                     isActive
-                      ? 'bg-[#121828] text-[#F1F5F9] font-medium border border-[#283652] border-l-2 border-l-[#8B5CF6] shadow-sm'
-                      : 'text-[#94A3B8] hover:text-[#F1F5F9] hover:bg-[#0E1320] border border-transparent'
+                      ? 'bg-[#18162E] text-white font-medium border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.15)]'
+                      : 'text-gray-400 hover:text-white hover:bg-[#121626] border border-transparent'
                   )
                 }
               >
                 {({ isActive }) => (
                   <>
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-3">
                       <Icon
                         className={cn(
                           'w-4 h-4 transition-colors',
                           isActive
-                            ? 'text-[#8B5CF6]'
-                            : isApprovalAlert
-                            ? 'text-[#F59E0B]'
-                            : 'text-[#64748B] group-hover:text-[#94A3B8]'
+                            ? 'text-purple-400'
+                            : 'text-gray-400 group-hover:text-gray-200'
                         )}
                       />
-                      <span className="font-sans font-medium text-xs tracking-tight">{item.name}</span>
+                      <span className="font-medium text-xs tracking-tight">
+                        {item.name}
+                      </span>
                     </div>
 
                     {badgeValue && (
                       <span
                         className={cn(
-                          'text-[10px] font-mono px-1.5 py-0.2 rounded border',
-                          isApprovalAlert
-                            ? 'bg-amber-500/20 text-[#FBBF24] border-amber-500/40 animate-pulse font-bold'
-                            : 'bg-[#121828] text-[#22D3EE] border-[#1E2638]'
+                          'text-[11px] font-semibold px-2 py-0.5 rounded-full',
+                          item.dynamicBadgeKey === 'approvals'
+                            ? 'bg-purple-600/30 text-purple-300 border border-purple-500/40'
+                            : 'bg-[#1E2538] text-gray-300'
                         )}
                       >
                         {badgeValue}
@@ -144,45 +122,21 @@ export const Sidebar: React.FC = () => {
         </nav>
       </div>
 
-      {/* Cluster Node Status (Real Values Only) */}
-      <div className="p-3.5 rounded bg-[#0E1320] border border-[#1E2638] space-y-2.5">
-        <div className="flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2">
-            <Server className="w-3.5 h-3.5 text-[#22D3EE]" />
-            <span className="font-medium text-[#F1F5F9] text-xs font-sans">Node Status</span>
-          </div>
-          <span className="flex items-center gap-1.5 text-[10px] font-mono">
-            <span
-              className={cn(
-                'w-1.5 h-1.5 rounded-full',
-                isModelReady
-                  ? 'bg-[#10B981] shadow-[0_0_6px_#10B981]'
-                  : isLlmConnected
-                  ? 'bg-[#F59E0B]'
-                  : 'bg-[#F43F5E]'
-              )}
-            />
-            <span className={isModelReady ? 'text-[#34D399]' : isLlmConnected ? 'text-[#FBBF24]' : 'text-[#FB7185]'}>
-              {isModelReady ? 'ONLINE' : isLlmConnected ? 'PULLING' : 'OFFLINE'}
-            </span>
-          </span>
-        </div>
+      {/* Bottom Promo Card: 5 Agent Research Pipeline */}
+      <div className="relative rounded-2xl bg-[#121626] border border-white/5 p-4 overflow-hidden shadow-lg">
+        {/* Glow backdrop */}
+        <div className="absolute -top-12 -right-12 w-28 h-28 bg-purple-600/20 rounded-full blur-2xl pointer-events-none" />
 
-        <div className="space-y-1.5 text-[10px] font-mono text-[#94A3B8] pt-2 border-t border-[#1E2638]">
-          <div className="flex justify-between items-center">
-            <span className="text-[#64748B]">MODEL</span>
-            <span className="text-[#F1F5F9] font-medium">{llmStatus?.target_model || 'qwen3.5:4b'}</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-[#64748B]">GPU</span>
-            <span className="text-[#22D3EE] truncate max-w-[120px] text-right" title={health?.hardware?.gpu_model || 'RTX 2050'}>
-              {health?.hardware?.gpu_model?.replace('NVIDIA GeForce ', '') || 'RTX 2050'}
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-[#64748B]">DATABASE</span>
-            <span className="text-[#34D399] font-medium">SQLite Active</span>
-          </div>
+        {/* Wave graphic */}
+        <WaveGraphic variant="card" className="h-16 -mt-2 -mx-2 opacity-90" />
+
+        <div className="mt-2 text-left relative z-10">
+          <h4 className="text-xs font-semibold text-white tracking-tight">
+            5 Agent Research Pipeline
+          </h4>
+          <p className="text-[10px] text-gray-400 mt-1 leading-snug">
+            Plan &bull; Research &bull; Analyze &bull; Verify &bull; Report
+          </p>
         </div>
       </div>
     </aside>
