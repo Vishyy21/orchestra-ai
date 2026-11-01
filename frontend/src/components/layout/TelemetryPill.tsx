@@ -65,7 +65,7 @@ export const TelemetryPill: React.FC = () => {
       <div className="flex items-center gap-2">
         <button
           onClick={() => setShowPopover(!showPopover)}
-          className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-[#11141D] border border-[#1E2330] hover:border-[#2D3447] text-xs transition-all duration-150 shadow-card hover:shadow-hover"
+          className="flex items-center gap-2.5 px-3 py-1.5 rounded bg-[#121624] border border-[#1F273B] hover:border-[#8B5CF6]/40 text-xs transition-all duration-150 shadow-sm"
           title="Click to view Ollama diagnostics"
         >
           {/* Status Dot with pulse */}
@@ -78,24 +78,24 @@ export const TelemetryPill: React.FC = () => {
 
           {/* Model info */}
           <div className="flex items-center gap-1.5 font-mono">
-            <span className="text-[#949BA8]">Ollama:</span>
-            <span className="text-[#EDEDEF] font-medium">{llmStatus?.target_model || 'qwen3.5:4b'}</span>
+            <span className="text-[#64748B]">Ollama:</span>
+            <span className="text-[#F1F5F9] font-medium">{llmStatus?.target_model || 'qwen3.5:4b'}</span>
           </div>
 
           {/* Status Badge */}
-          <span className={`px-1.5 py-0.5 rounded text-[10px] font-sans font-semibold tracking-wide border ${getStatusColor()}`}>
+          <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold tracking-wide border ${getStatusColor()}`}>
             {getStatusLabel()}
           </span>
 
           {/* GPU Hardware */}
-          <div className="hidden lg:flex items-center gap-1 text-[#949BA8] pl-2 border-l border-[#1E2330]">
-            <Cpu className="w-3.5 h-3.5 text-[#38BDF8]" />
+          <div className="hidden lg:flex items-center gap-1.5 text-[#949BA8] pl-2.5 border-l border-[#1F273B]">
+            <Cpu className="w-3.5 h-3.5 text-[#22D3EE]" />
             <span className="font-mono text-[11px]">
               {health?.hardware?.gpu_model?.replace('NVIDIA GeForce ', '') || 'RTX 2050'} (4GB)
             </span>
           </div>
 
-          <ChevronDown className={`w-3.5 h-3.5 text-[#949BA8] transition-transform duration-150 ${showPopover ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`w-3.5 h-3.5 text-[#64748B] transition-transform duration-150 ${showPopover ? 'rotate-180' : ''}`} />
         </button>
 
         {/* Retry Button when Offline */}
@@ -106,17 +106,17 @@ export const TelemetryPill: React.FC = () => {
             onClick={() => refetchLLM()}
             isLoading={isRefetchingLLM}
             title="Probe Ollama connection"
-            className="text-xs h-8"
+            className="text-xs h-7 px-2.5 font-mono border-[#1F273B] hover:border-[#8B5CF6]/50 bg-[#121624]"
           >
             <RefreshCw className="w-3 h-3" />
-            <span className="hidden sm:inline">Probe</span>
+            <span className="hidden sm:inline text-[11px]">Probe</span>
           </Button>
         )}
       </div>
 
       {/* Popover Diagnostics Panel */}
       {showPopover && (
-        <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-80 sm:w-96 rounded-xl bg-[#11141D] border border-[#2D3447] shadow-dropdown p-4 z-50 animate-scale-in text-xs space-y-3 font-sans">
+        <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-80 sm:w-96 rounded bg-[#121624] border border-[#2A354D] shadow-2xl p-4 z-50 animate-scale-in text-xs space-y-3 font-sans top-radiant-sheen">
           {/* Popover Header */}
           <div className="flex items-center justify-between pb-2 border-b border-[#1E2330]">
             <div className="flex items-center gap-2">
