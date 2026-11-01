@@ -13,11 +13,17 @@ router = APIRouter(prefix="/approvals", tags=["Human Approvals"])
 
 
 @router.get("", response_model=List[ApprovalRead])
-def list_approvals(status_filter: Optional[str] = None, db: Session = Depends(get_db)):
+def list_approvals(
+    status_filter: Optional[str] = None,
+    task_id: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
     """GET /api/approvals — List approval requests for human-in-the-loop governance."""
     query = db.query(Approval)
     if status_filter:
         query = query.filter(Approval.status == status_filter)
+    if task_id:
+        query = query.filter(Approval.task_id == task_id)
     approvals = query.order_by(Approval.created_at.desc()).all()
     return [ApprovalRead.model_validate(a) for a in approvals]
 

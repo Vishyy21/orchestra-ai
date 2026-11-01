@@ -12,6 +12,8 @@ export interface AgentRunBrief {
   id: string;
   agent_name: string;
   status: string;
+  input_data?: string;
+  output_data?: string;
   started_at: string;
   completed_at?: string;
   execution_time_ms?: number;
@@ -30,6 +32,7 @@ export interface Task {
   created_at: string;
   updated_at: string;
   agent_runs?: AgentRunBrief[];
+  approvals?: Approval[];
 }
 
 export interface TaskCreateInput {

@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     # Ollama Local LLM Configuration
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "qwen3.5:4b"
-    ollama_timeout_seconds: float = 60.0
+    ollama_timeout_seconds: float = 120.0
     ollama_health_timeout_seconds: float = 3.0
 
     # Storage paths

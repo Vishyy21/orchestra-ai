@@ -55,6 +55,22 @@ class AgentRunBrief(BaseModel):
     execution_time_ms: Optional[int] = None
 
 
+class ApprovalBrief(BaseModel):
+    """Brief approval representation attached to task."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    task_id: str
+    agent_name: str
+    action_type: str
+    description: str
+    status: str
+    payload: Optional[str] = None
+    created_at: datetime
+    decided_at: Optional[datetime] = None
+
+
 class TaskRead(TaskBase):
     """Schema for reading a task."""
 
@@ -67,6 +83,7 @@ class TaskRead(TaskBase):
     created_at: datetime
     updated_at: datetime
     agent_runs: List[AgentRunBrief] = []
+    approvals: List[ApprovalBrief] = []
 
 
 class TaskListResponse(BaseModel):

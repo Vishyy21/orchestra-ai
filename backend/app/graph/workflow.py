@@ -70,7 +70,7 @@ def _persist_agent_run(
                 agent_name=agent_name,
                 status=status,
                 input_data=input_data[:2000] if input_data else "",
-                output_data=output_data[:4000] if output_data else "",
+                output_data=output_data[:10000] if output_data else "",
                 started_at=started_at,
                 completed_at=datetime.utcnow(),
                 execution_time_ms=execution_time_ms,
@@ -188,6 +188,7 @@ def researcher_node(state: OrchestraAgentState) -> Dict[str, Any]:
     # Step 2: Real web search using Tavily tool if key is configured, with lightweight relevance filtering
     search_findings = ""
     citations: List[Dict[str, str]] = []
+    excluded_sources: List[Dict[str, Any]] = []
     search_status = "not_executed"
 
     try:
@@ -204,6 +205,11 @@ def researcher_node(state: OrchestraAgentState) -> Dict[str, Any]:
                 if sim >= 0.30:
                     valid_sources.append((r, content_snippet, sim))
                 else:
+                    excluded_sources.append({
+                        "title": r.title,
+                        "url": getattr(r, "url", ""),
+                        "similarity": round(float(sim), 4),
+                    })
                     logger.info(f"Excluded irrelevant search result: '{r.title}' (score {sim:.4f} < 0.30)")
 
             if valid_sources:
@@ -305,11 +311,58 @@ def researcher_node(state: OrchestraAgentState) -> Dict[str, Any]:
         raise RuntimeError(f"Research Agent failed: {exc}") from exc
 
     elapsed_ms = int((time.perf_counter() - t0) * 1000)
+
+    # Format structured output_data capturing synthesis, document chunks, web citations, and filter status
+    research_run_lines = [
+        "### Synthesized Research Facts",
+        research_output,
+        "",
+        "### Retrieved ChromaDB Documents",
+    ]
+    if document_references:
+        for d in document_references:
+            fname = d.get("filename", "Document")
+            page = d.get("page_number", 1)
+            chunk_idx = d.get("chunk_index", 0)
+            doc_id = d.get("doc_id", "")
+            excerpt = d.get("excerpt", "")
+            doc_id_label = f"`{doc_id[:8]}...`" if doc_id else "`N/A`"
+            research_run_lines.append(f"- **{fname}** (Doc ID: {doc_id_label}, Page {page}, Chunk #{chunk_idx})")
+            research_run_lines.append(f"  Excerpt: \"{excerpt}...\"")
+    else:
+        research_run_lines.append("*No local ChromaDB document chunks matched the cutoff threshold.*")
+
+    research_run_lines.append("")
+    research_run_lines.append("### Accepted Web Sources (Tavily)")
+    if citations:
+        for c in citations:
+            research_run_lines.append(f"- [{c.get('title')}]({c.get('url')})")
+            research_run_lines.append(f"  Snippet: {c.get('snippet')}")
+    elif search_status == "no_relevant_sources":
+        research_run_lines.append("*Retrieved search results were excluded due to low relevance (< 0.30 similarity threshold).*")
+    elif search_status == "unconfigured":
+        research_run_lines.append("*External web retrieval unconfigured (TAVILY_API_KEY is not set).*")
+    elif search_status == "failed":
+        research_run_lines.append("*External web retrieval failed.*")
+    else:
+        research_run_lines.append("*No web sources retrieved.*")
+
+    if excluded_sources:
+        research_run_lines.append("")
+        research_run_lines.append("### Excluded Search Results (Below Cutoff)")
+        for ex in excluded_sources:
+            research_run_lines.append(f"- Filtered: *{ex.get('title')}* (Relevance: {ex.get('similarity')} < 0.30 cutoff)")
+
+    research_run_lines.append("")
+    research_run_lines.append(f"**Search Status:** `{search_status}`")
+
+    formatted_output = "\n".join(research_run_lines)
+
     _persist_agent_run(
         task_id=task_id,
         agent_name="Research Agent",
         input_data=f"Query: {search_query} | Docs: {len(document_references)} | Web Citations: {len(citations)} | Search: {search_status}",
-        output_data=research_output,
+        output_data=formatted_output,
         started_at=started_at,
         execution_time_ms=elapsed_ms,
         status="completed",
