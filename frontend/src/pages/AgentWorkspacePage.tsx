@@ -8,6 +8,7 @@ import { Button } from '../components/ui/Button';
 import { OrchestrationFlow } from '../components/pipeline/OrchestrationFlow';
 import { timeAgo, formatDate } from '../lib/utils';
 import type { AgentRunBrief, TaskStatus } from '../types';
+
 export const HITL_REJECTION_PREFIX =
   'ACTION REJECTED: Task rejected by Human-in-the-Loop governance';
 
@@ -206,6 +207,7 @@ export function deriveTimelineExecutionStates<T extends { id: string; name: stri
     };
   });
 }
+
 import {
   GitBranch,
   Search,
@@ -250,7 +252,7 @@ const FIVE_AGENTS: AgentMeta[] = [
     role: 'Decomposition & Task Strategy',
     order: 1,
     icon: GitBranch,
-    color: '#8B7CFF',
+    color: '#818CF8',
     nodeId: 'node-planner',
   },
   {
@@ -260,7 +262,7 @@ const FIVE_AGENTS: AgentMeta[] = [
     role: 'Tavily Web & ChromaDB RAG',
     order: 2,
     icon: Search,
-    color: '#55C7D9',
+    color: '#38BDF8',
     nodeId: 'node-researcher',
   },
   {
@@ -270,7 +272,7 @@ const FIVE_AGENTS: AgentMeta[] = [
     role: 'Synthesis & Tradeoff Analysis',
     order: 3,
     icon: Brain,
-    color: '#8B7CFF',
+    color: '#818CF8',
     nodeId: 'node-analyst',
   },
   {
@@ -280,7 +282,7 @@ const FIVE_AGENTS: AgentMeta[] = [
     role: 'Fact-Check & Numerical Audit',
     order: 4,
     icon: ShieldCheck,
-    color: '#36B98A',
+    color: '#34D399',
     nodeId: 'node-verifier',
   },
   {
@@ -290,7 +292,7 @@ const FIVE_AGENTS: AgentMeta[] = [
     role: 'Executive Markdown Compilation',
     order: 5,
     icon: FileText,
-    color: '#E6AA57',
+    color: '#FBBF24',
     nodeId: 'node-reporter',
   },
 ];
@@ -329,7 +331,6 @@ export const AgentWorkspacePage: React.FC = () => {
   // Determine active task ID
   const activeTaskId = useMemo(() => {
     if (urlTaskId) return urlTaskId;
-    // Default to the first running/awaiting task, or first recent task
     const active = recentTasks.find(
       (t) => t.status === 'running' || t.status === 'awaiting_approval'
     );
@@ -355,7 +356,7 @@ export const AgentWorkspacePage: React.FC = () => {
     enabled: Boolean(activeTaskId),
     refetchInterval: (query) => {
       const status = query.state.data?.status;
-      if (status === 'running') return 1500; // Live 1.5s polling during active execution
+      if (status === 'running') return 1500;
       if (status === 'awaiting_approval') return 3000;
       return 10000;
     },
@@ -368,12 +369,12 @@ export const AgentWorkspacePage: React.FC = () => {
     enabled: Boolean(activeTaskId && task?.status === 'completed'),
   });
 
-  // 1. Group historical runs into distinct execution attempts (BUG-03)
+  // 1. Group historical runs into distinct execution attempts
   const attempts: ExecutionAttempt[] = useMemo(() => {
     return groupRunsIntoAttempts(task?.agent_runs, task?.status);
   }, [task?.agent_runs, task?.status]);
 
-  // 2. Select the latest execution attempt (BUG-01)
+  // 2. Select the latest execution attempt
   const latestAttempt = useMemo(() => {
     return attempts.length > 0 ? attempts[attempts.length - 1] : null;
   }, [attempts]);
@@ -391,7 +392,7 @@ export const AgentWorkspacePage: React.FC = () => {
     );
   }, [executionStates, selectedAgentId]);
 
-  // Pending approval record (if task is awaiting_approval)
+  // Pending approval record
   const pendingApproval = useMemo(() => {
     if (task?.status !== 'awaiting_approval' || !task.approvals) return null;
     return task.approvals.find((a) => a.status === 'pending') || task.approvals[0] || null;
@@ -468,50 +469,50 @@ export const AgentWorkspacePage: React.FC = () => {
     switch (status) {
       case 'completed':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[#36B98A]/10 text-[#36B98A] border border-[#36B98A]/30">
-            <CheckCircle2 className="w-3 h-3 text-[#36B98A]" />
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-[#10B981]/12 text-[#34D399] border border-[#10B981]/30">
+            <CheckCircle2 className="w-3 h-3 text-[#34D399]" />
             DONE
           </span>
         );
       case 'running':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[#55C7D9]/15 text-[#55C7D9] border border-[#55C7D9]/40 animate-pulse">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#55C7D9] animate-ping" />
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-[#06B6D4]/15 text-[#38BDF8] border border-[#06B6D4]/40 animate-pulse">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#06B6D4] animate-ping" />
             RUNNING
           </span>
         );
       case 'awaiting_approval':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[#E6AA57]/15 text-[#E6AA57] border border-[#E6AA57]/40 animate-pulse">
-            <ShieldAlert className="w-3 h-3 text-[#E6AA57]" />
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-[#F59E0B]/15 text-[#FBBF24] border border-[#F59E0B]/40 animate-pulse">
+            <ShieldAlert className="w-3 h-3 text-[#FBBF24]" />
             GATE PAUSED
           </span>
         );
       case 'rejected_at_gate':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[#E6AA57]/15 text-[#E6AA57] border border-[#E6AA57]/40">
-            <ShieldAlert className="w-3 h-3 text-[#E6AA57]" />
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-[#F59E0B]/15 text-[#FBBF24] border border-[#F59E0B]/40">
+            <ShieldAlert className="w-3 h-3 text-[#FBBF24]" />
             REJECTED AT GATE
           </span>
         );
       case 'not_executed':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[#1C222E] text-[#9CA3AF] border border-[#252B36]">
-            <Clock className="w-3 h-3 text-[#9CA3AF]" />
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-[#151924] text-[#949BA8] border border-[#1E2330]">
+            <Clock className="w-3 h-3 text-[#949BA8]" />
             NOT EXECUTED
           </span>
         );
       case 'failed':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[#E16D78]/10 text-[#E16D78] border border-[#E16D78]/30">
-            <XCircle className="w-3 h-3 text-[#E16D78]" />
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-[#F43F5E]/12 text-[#FB7185] border border-[#F43F5E]/30">
+            <XCircle className="w-3 h-3 text-[#FB7185]" />
             FAILED
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[#1C222E] text-[#9CA3AF] border border-[#252B36]">
-            <Clock className="w-3 h-3 text-[#9CA3AF]" />
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-[#151924] text-[#949BA8] border border-[#1E2330]">
+            <Clock className="w-3 h-3 text-[#949BA8]" />
             WAITING
           </span>
         );
@@ -519,19 +520,19 @@ export const AgentWorkspacePage: React.FC = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 max-w-7xl mx-auto w-full space-y-6 animate-fade-in font-sans">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-6 animate-fade-in font-sans">
       {/* Top Console Command Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#252B36]">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#1E2330]">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded bg-[#1C222E] text-[#8B7CFF] border border-[#252B36]">
+            <span className="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#151924] text-[#818CF8] border border-[#1E2330] font-medium">
               Execution Console
             </span>
-            <span className="text-xs text-[#9CA3AF] font-mono">
+            <span className="text-xs text-[#949BA8] font-mono">
               LangGraph 5-Agent Pipeline
             </span>
           </div>
-          <h1 className="text-xl font-bold tracking-tight text-[#E5E7EB] mt-1 flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#EDEDEF] mt-1.5 flex items-center gap-2">
             Live Agent Workspace
           </h1>
         </div>
@@ -543,7 +544,7 @@ export const AgentWorkspacePage: React.FC = () => {
               aria-label="Select active task"
               value={activeTaskId || ''}
               onChange={(e) => setSearchParams({ taskId: e.target.value })}
-              className="bg-[#151922] text-[#E5E7EB] text-xs font-mono rounded-md border border-[#252B36] px-3 py-1.5 pr-8 focus:outline-none focus:border-[#8B7CFF] cursor-pointer hover:border-[#343C4B] transition-colors"
+              className="bg-[#11141D] text-[#EDEDEF] text-xs font-mono rounded-lg border border-[#1E2330] px-3.5 py-2 pr-8 focus:outline-none focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1]/50 cursor-pointer hover:border-[#2D3447] transition-all shadow-card"
             >
               {recentTasks.length === 0 && <option value="">No Tasks Found</option>}
               {recentTasks.map((t) => (
@@ -560,6 +561,7 @@ export const AgentWorkspacePage: React.FC = () => {
             onClick={() => refetchActiveTask()}
             isLoading={isTaskRefetching}
             title="Refetch task execution state"
+            className="text-xs h-9"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Sync</span>
@@ -569,9 +571,9 @@ export const AgentWorkspacePage: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={() => setShowTopologyFlow(!showTopologyFlow)}
-            className="text-xs font-mono"
+            className="text-xs font-mono h-9"
           >
-            <Terminal className="w-3.5 h-3.5 text-[#55C7D9]" />
+            <Terminal className="w-3.5 h-3.5 text-[#38BDF8]" />
             <span>{showTopologyFlow ? 'Hide Diagram' : 'DAG Diagram'}</span>
             {showTopologyFlow ? (
               <ChevronUp className="w-3 h-3 ml-1" />
@@ -584,6 +586,7 @@ export const AgentWorkspacePage: React.FC = () => {
             variant="primary"
             size="sm"
             onClick={() => navigate('/new-task')}
+            className="text-xs h-9"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>New Task</span>
@@ -593,33 +596,35 @@ export const AgentWorkspacePage: React.FC = () => {
 
       {/* Task Summary Banner */}
       {task ? (
-        <div className="p-4 rounded-lg bg-[#11141B] border border-[#252B36] space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-[#252B36]/60">
-            <div className="space-y-0.5">
+        <div className="p-4 sm:p-5 rounded-xl bg-[#0C0E14] border border-[#1E2330] shadow-card space-y-3 relative overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.08] to-transparent pointer-events-none" />
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#1E2330]/70">
+            <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-mono text-xs text-[#55C7D9] font-medium">
+                <span className="font-mono text-xs text-[#38BDF8] font-semibold">
                   TASK-ID: {task.id}
                 </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#181D27] text-[#9CA3AF] border border-[#252B36]">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#151924] text-[#949BA8] border border-[#1E2330]">
                   {task.category}
                 </span>
                 <span
-                  className={`text-[10px] font-mono px-2 py-0.5 rounded border uppercase ${
+                  className={`text-[10px] font-mono px-2 py-0.5 rounded-md border uppercase font-medium ${
                     task.priority === 'critical'
-                      ? 'bg-[#E16D78]/10 text-[#E16D78] border-[#E16D78]/30'
-                      : 'bg-[#181D27] text-[#9CA3AF] border-[#252B36]'
+                      ? 'bg-[#F43F5E]/12 text-[#FB7185] border-[#F43F5E]/30'
+                      : 'bg-[#151924] text-[#949BA8] border-[#1E2330]'
                   }`}
                 >
                   {task.priority} Priority
                 </span>
                 {task.requires_approval && (
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#E6AA57]/10 text-[#E6AA57] border border-[#E6AA57]/30 flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3 text-[#E6AA57]" />
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#F59E0B]/12 text-[#FBBF24] border border-[#F59E0B]/30 flex items-center gap-1 font-medium">
+                    <ShieldCheck className="w-3 h-3 text-[#FBBF24]" />
                     HITL Gated
                   </span>
                 )}
               </div>
-              <h2 className="text-base font-semibold text-[#E5E7EB] tracking-tight">
+              <h2 className="text-base sm:text-lg font-semibold text-[#EDEDEF] tracking-tight">
                 {task.title}
               </h2>
             </div>
@@ -628,8 +633,8 @@ export const AgentWorkspacePage: React.FC = () => {
               {renderTaskStatusBadge(task.status)}
 
               {task.status === 'running' && (
-                <span className="flex items-center gap-1 text-[11px] font-mono text-[#55C7D9]">
-                  <Activity className="w-3.5 h-3.5 animate-spin" />
+                <span className="flex items-center gap-1.5 text-[11px] font-mono text-[#38BDF8] bg-[#06B6D4]/10 px-2 py-1 rounded-md border border-[#06B6D4]/20">
+                  <Activity className="w-3.5 h-3.5 animate-spin text-[#38BDF8]" />
                   Live Polling (1.5s)
                 </span>
               )}
@@ -648,20 +653,20 @@ export const AgentWorkspacePage: React.FC = () => {
             </div>
           </div>
 
-          <p className="text-xs text-[#9CA3AF] leading-relaxed line-clamp-2">
+          <p className="text-xs text-[#949BA8] leading-relaxed line-clamp-2">
             {task.description}
           </p>
         </div>
       ) : isTaskLoading ? (
-        <div className="p-8 rounded-lg bg-[#11141B] border border-[#252B36] text-center space-y-2">
-          <Activity className="w-6 h-6 text-[#8B7CFF] animate-spin mx-auto" />
-          <p className="text-xs text-[#9CA3AF] font-mono">Loading active task state from SQLite...</p>
+        <div className="p-8 rounded-xl bg-[#0C0E14] border border-[#1E2330] text-center space-y-2">
+          <Activity className="w-6 h-6 text-[#818CF8] animate-spin mx-auto" />
+          <p className="text-xs text-[#949BA8] font-mono">Loading active task state from SQLite...</p>
         </div>
       ) : (
-        <div className="p-8 rounded-lg bg-[#11141B] border border-[#252B36] text-center space-y-3">
-          <Terminal className="w-8 h-8 text-[#9CA3AF]/40 mx-auto" />
-          <p className="text-sm font-medium text-[#E5E7EB]">No Task Selected</p>
-          <p className="text-xs text-[#9CA3AF] max-w-md mx-auto">
+        <div className="p-10 rounded-xl bg-[#0C0E14] border border-[#1E2330] text-center space-y-3">
+          <Terminal className="w-8 h-8 text-[#949BA8]/40 mx-auto" />
+          <p className="text-sm font-medium text-[#EDEDEF]">No Task Selected</p>
+          <p className="text-xs text-[#949BA8] max-w-md mx-auto">
             Select a task from the dropdown or submit a new execution objective to inspect live agent activity.
           </p>
           <Button variant="primary" size="sm" onClick={() => navigate('/new-task')}>
@@ -673,17 +678,17 @@ export const AgentWorkspacePage: React.FC = () => {
 
       {/* Human-in-the-Loop Governance Gate Banner (if awaiting approval) */}
       {task?.status === 'awaiting_approval' && pendingApproval && (
-        <div className="p-4 rounded-lg bg-[#E6AA57]/10 border border-[#E6AA57]/40 space-y-3 animate-fade-in shadow-lg">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E6AA57]/20">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-md bg-[#E6AA57]/20 border border-[#E6AA57]/40 flex items-center justify-center shrink-0">
-                <ShieldAlert className="w-4 h-4 text-[#E6AA57]" />
+        <div className="p-5 rounded-xl bg-[#F59E0B]/10 border border-[#F59E0B]/35 space-y-3 animate-fade-in shadow-hover">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#F59E0B]/20">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-[#F59E0B]/20 border border-[#F59E0B]/40 flex items-center justify-center shrink-0">
+                <ShieldAlert className="w-5 h-5 text-[#FBBF24]" />
               </div>
               <div>
-                <h3 className="text-xs font-bold text-[#E6AA57] tracking-wider uppercase font-mono">
+                <h3 className="text-xs font-bold text-[#FBBF24] tracking-wider uppercase font-mono">
                   Human-in-the-Loop Governance Gate Active
                 </h3>
-                <p className="text-[11px] text-[#E5E7EB] mt-0.5">
+                <p className="text-xs text-[#EDEDEF] mt-0.5">
                   Workflow paused before Verifier Agent. Review findings below to approve publication or reject.
                 </p>
               </div>
@@ -691,7 +696,7 @@ export const AgentWorkspacePage: React.FC = () => {
 
             <Link
               to="/approvals"
-              className="text-xs font-mono text-[#E6AA57] hover:underline flex items-center gap-1 shrink-0"
+              className="text-xs font-mono text-[#FBBF24] hover:underline flex items-center gap-1 shrink-0 font-medium"
             >
               <span>View All Approvals</span>
               <ArrowRight className="w-3 h-3" />
@@ -700,7 +705,7 @@ export const AgentWorkspacePage: React.FC = () => {
 
           {/* Payload preview if available */}
           {pendingApproval.payload && (
-            <div className="p-3 rounded bg-[#0B0D12] border border-[#252B36] text-xs font-mono text-[#9CA3AF] max-h-36 overflow-y-auto whitespace-pre-wrap">
+            <div className="p-3.5 rounded-lg bg-[#08090C] border border-[#1E2330] text-xs font-mono text-[#949BA8] max-h-36 overflow-y-auto whitespace-pre-wrap leading-relaxed">
               {pendingApproval.payload}
             </div>
           )}
@@ -712,18 +717,18 @@ export const AgentWorkspacePage: React.FC = () => {
               placeholder="Optional reasoning note for audit log..."
               value={decisionReason}
               onChange={(e) => setDecisionReason(e.target.value)}
-              className="flex-1 bg-[#0B0D12] text-[#E5E7EB] text-xs font-mono px-3 py-1.5 rounded border border-[#252B36] focus:outline-none focus:border-[#E6AA57]"
+              className="flex-1 bg-[#08090C] text-[#EDEDEF] text-xs font-mono px-3.5 py-2 rounded-lg border border-[#1E2330] focus:outline-none focus:border-[#F59E0B] transition-colors"
             />
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2.5 shrink-0">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handleDecideApproval('rejected')}
                 isLoading={isDeciding}
-                className="text-[#E16D78] hover:text-[#E16D78] border-[#E16D78]/30 hover:border-[#E16D78]"
+                className="text-[#FB7185] hover:text-[#FB7185] border-[#F43F5E]/30 hover:border-[#F43F5E] h-9"
               >
-                <XCircle className="w-3.5 h-3.5" />
+                <XCircle className="w-3.5 h-3.5 mr-1" />
                 <span>Reject Execution</span>
               </Button>
 
@@ -732,9 +737,9 @@ export const AgentWorkspacePage: React.FC = () => {
                 size="sm"
                 onClick={() => handleDecideApproval('approved')}
                 isLoading={isDeciding}
-                className="bg-[#36B98A] hover:bg-[#2fa379] text-[#0B0D12] font-semibold"
+                className="bg-gradient-to-b from-[#10B981] to-[#059669] hover:from-[#34D399] hover:to-[#10B981] text-[#08090C] font-bold border-[#047857] h-9"
               >
-                <Check className="w-3.5 h-3.5" />
+                <Check className="w-3.5 h-3.5 mr-1" />
                 <span>Authorize &amp; Resume</span>
               </Button>
             </div>
@@ -744,10 +749,10 @@ export const AgentWorkspacePage: React.FC = () => {
 
       {/* Collapsible React Flow DAG Diagram */}
       {showTopologyFlow && (
-        <div className="rounded-lg bg-[#11141B] border border-[#252B36] p-3 space-y-2 animate-fade-in">
-          <div className="flex items-center justify-between text-xs text-[#9CA3AF] px-1 font-mono">
+        <div className="rounded-xl bg-[#0C0E14] border border-[#1E2330] p-4 space-y-2 animate-fade-in shadow-card">
+          <div className="flex items-center justify-between text-xs text-[#949BA8] px-1 font-mono">
             <span>Graph Pipeline Architecture</span>
-            <span className="text-[11px] text-[#9CA3AF]/60">5-agent sequential topology</span>
+            <span className="text-[11px] text-[#949BA8]/70">5-agent sequential topology</span>
           </div>
           <OrchestrationFlow
             height="300px"
@@ -762,66 +767,69 @@ export const AgentWorkspacePage: React.FC = () => {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5 flex-wrap">
-            <h2 className="text-xs font-bold text-[#E5E7EB] uppercase tracking-wider font-mono flex items-center gap-2">
-              <Activity className="w-3.5 h-3.5 text-[#8B7CFF]" />
+            <h2 className="text-xs font-bold text-[#EDEDEF] uppercase tracking-wider font-mono flex items-center gap-2">
+              <Activity className="w-3.5 h-3.5 text-[#818CF8]" />
               Sequential Execution Timeline (5 Agents)
             </h2>
             {attempts.length > 1 && (
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#8B7CFF]/15 text-[#8B7CFF] border border-[#8B7CFF]/30">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#6366F1]/15 text-[#818CF8] border border-[#6366F1]/30 font-medium">
                 Attempt {attempts.length} of {attempts.length} (Latest)
               </span>
             )}
           </div>
-          <span className="text-[11px] font-mono text-[#9CA3AF]">
+          <span className="text-[11px] font-mono text-[#949BA8]">
             Derived from SQLite AgentRun records
           </span>
         </div>
 
         {/* Horizontal Sequential Agent Pipeline Track */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3.5">
           {executionStates.map((agentState, index) => {
             const isSelected = selectedAgentId === agentState.meta.id;
             const Icon = agentState.meta.icon;
+            const isRunning = agentState.status === 'running';
 
             return (
               <div
                 key={agentState.meta.id}
                 onClick={() => setSelectedAgentId(agentState.meta.id)}
-                className={`p-3 rounded-lg bg-[#151922] border cursor-pointer select-none transition-all flex flex-col justify-between relative group ${
+                className={`p-3.5 rounded-xl border cursor-pointer select-none transition-all duration-150 flex flex-col justify-between relative group shadow-card ${
                   isSelected
-                    ? 'border-[#8B7CFF] ring-1 ring-[#8B7CFF]/50 bg-[#181D27]'
-                    : 'border-[#252B36] hover:border-[#343C4B]'
+                    ? 'border-[#6366F1] ring-1 ring-[#6366F1]/50 bg-[#151924] shadow-glow'
+                    : isRunning
+                    ? 'border-[#06B6D4]/60 ring-1 ring-[#06B6D4]/40 bg-[#11141D] animate-pulse-glow'
+                    : 'border-[#1E2330] bg-[#11141D] hover:border-[#2D3447] hover:bg-[#151924]'
                 }`}
               >
                 {/* Connecting arrow indicator between nodes for desktop */}
                 {index < 4 && (
                   <div className="hidden md:block absolute -right-2 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
-                    <span className="w-3 h-3 rounded-full bg-[#11141B] border border-[#252B36] flex items-center justify-center text-[#9CA3AF] text-[9px]">
+                    <span className="w-3.5 h-3.5 rounded-full bg-[#0C0E14] border border-[#1E2330] flex items-center justify-center text-[#949BA8] text-[9px] shadow-sm">
                       ›
                     </span>
                   </div>
                 )}
 
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-[10px] text-[#9CA3AF]">
+                    <span className="font-mono text-[10px] text-[#949BA8] font-medium">
                       STEP 0{agentState.meta.order}
                     </span>
                     {renderNodeStatusBadge(agentState.status)}
                   </div>
 
-                  <div className="flex items-center gap-2 pt-1">
+                  <div className="flex items-center gap-2.5 pt-1">
                     <div
-                      className="w-7 h-7 rounded bg-[#11141B] border border-[#252B36] flex items-center justify-center shrink-0"
+                      className="w-8 h-8 rounded-lg bg-[#090B10] border border-[#1E2330] flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 transition-transform"
                       style={{ color: agentState.meta.color }}
                     >
                       <Icon className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-xs font-semibold text-[#E5E7EB] truncate">
+                      <h3 className="text-xs font-semibold text-[#EDEDEF] truncate">
                         {agentState.meta.name}
                       </h3>
-                      <p className="text-[10px] text-[#9CA3AF] font-mono truncate">
+                      <p className="text-[10px] text-[#949BA8] font-mono truncate mt-0.5">
                         {agentState.meta.role}
                       </p>
                     </div>
@@ -829,8 +837,8 @@ export const AgentWorkspacePage: React.FC = () => {
                 </div>
 
                 {/* Duration & Execution Timestamp */}
-                <div className="pt-2.5 mt-2 border-t border-[#252B36]/60 flex items-center justify-between font-mono text-[10px] text-[#9CA3AF]">
-                  <span>
+                <div className="pt-3 mt-2.5 border-t border-[#1E2330]/70 flex items-center justify-between font-mono text-[10px] text-[#949BA8]">
+                  <span className="font-medium text-[#EDEDEF]/80">
                     {agentState.status === 'rejected_at_gate'
                       ? '0 ms (Gate Marker)'
                       : agentState.durationMs != null
@@ -866,31 +874,33 @@ export const AgentWorkspacePage: React.FC = () => {
         {/* Left Column (2/3): Agent Specific Execution Output Console */}
         <div className="lg:col-span-2 space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-bold text-[#E5E7EB] uppercase tracking-wider font-mono flex items-center gap-2">
-              <Terminal className="w-3.5 h-3.5 text-[#55C7D9]" />
+            <h2 className="text-xs font-bold text-[#EDEDEF] uppercase tracking-wider font-mono flex items-center gap-2">
+              <Terminal className="w-3.5 h-3.5 text-[#38BDF8]" />
               Agent Output Inspector: {selectedState.meta.name}
             </h2>
-            <div className="flex items-center gap-2 font-mono text-[11px]">
-              <span className="text-[#9CA3AF]">Model:</span>
-              <span className="text-[#E5E7EB] font-medium">qwen3.5:4b (Ollama)</span>
+            <div className="flex items-center gap-2 font-mono text-xs">
+              <span className="text-[#949BA8]">Model:</span>
+              <span className="text-[#EDEDEF] font-medium px-1.5 py-0.5 rounded bg-[#11141D] border border-[#1E2330]">
+                qwen3.5:4b (Ollama)
+              </span>
             </div>
           </div>
 
-          <Card className="space-y-4">
+          <Card className="space-y-4 p-5">
             {/* Inspector Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#252B36]">
-              <div className="flex items-center gap-2.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-[#1E2330]">
+              <div className="flex items-center gap-3">
                 <div
-                  className="w-8 h-8 rounded-md bg-[#11141B] border border-[#252B36] flex items-center justify-center shrink-0"
+                  className="w-9 h-9 rounded-lg bg-[#090B10] border border-[#1E2330] flex items-center justify-center shrink-0 shadow-inner"
                   style={{ color: selectedState.meta.color }}
                 >
                   <selectedState.meta.icon className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-[#E5E7EB]">
+                  <h3 className="text-sm font-semibold text-[#EDEDEF]">
                     {selectedState.meta.name}
                   </h3>
-                  <p className="text-xs text-[#9CA3AF] font-mono">
+                  <p className="text-xs text-[#949BA8] font-mono mt-0.5">
                     {selectedState.meta.role}
                   </p>
                 </div>
@@ -899,7 +909,7 @@ export const AgentWorkspacePage: React.FC = () => {
               <div className="flex items-center gap-2 font-mono text-xs">
                 {renderNodeStatusBadge(selectedState.status)}
                 {selectedState.durationMs != null && (
-                  <span className="px-2 py-0.5 rounded bg-[#181D27] text-[#55C7D9] border border-[#252B36]">
+                  <span className="px-2 py-0.5 rounded-md bg-[#151924] text-[#38BDF8] border border-[#1E2330] font-medium">
                     {selectedState.durationMs} ms
                   </span>
                 )}
@@ -907,22 +917,22 @@ export const AgentWorkspacePage: React.FC = () => {
             </div>
 
             {/* Timestamps Bar */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 font-mono text-[11px] p-2.5 rounded bg-[#11141B] border border-[#252B36]">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 font-mono text-xs p-3 rounded-xl bg-[#090B10] border border-[#1E2330]">
               <div>
-                <span className="text-[#9CA3AF] block text-[10px]">STARTED AT</span>
-                <span className="text-[#E5E7EB]">
+                <span className="text-[#949BA8] block text-[10px]">STARTED AT</span>
+                <span className="text-[#EDEDEF] font-medium mt-0.5 block">
                   {selectedState.startedAt ? formatDate(selectedState.startedAt) : 'Not started'}
                 </span>
               </div>
               <div>
-                <span className="text-[#9CA3AF] block text-[10px]">COMPLETED AT</span>
-                <span className="text-[#E5E7EB]">
+                <span className="text-[#949BA8] block text-[10px]">COMPLETED AT</span>
+                <span className="text-[#EDEDEF] font-medium mt-0.5 block">
                   {selectedState.completedAt ? formatDate(selectedState.completedAt) : '—'}
                 </span>
               </div>
               <div className="col-span-2 sm:col-span-1">
-                <span className="text-[#9CA3AF] block text-[10px]">EXECUTION TIME</span>
-                <span className="text-[#55C7D9]">
+                <span className="text-[#949BA8] block text-[10px]">EXECUTION TIME</span>
+                <span className="text-[#38BDF8] font-medium mt-0.5 block">
                   {selectedState.durationMs != null ? `${selectedState.durationMs} ms` : '—'}
                 </span>
               </div>
@@ -930,47 +940,47 @@ export const AgentWorkspacePage: React.FC = () => {
 
             {/* Agent-Specific Renderers */}
             {selectedState.status === 'waiting' ? (
-              <div className="p-8 text-center space-y-2 rounded bg-[#11141B] border border-[#252B36]">
-                <Clock className="w-6 h-6 text-[#9CA3AF]/40 mx-auto" />
-                <p className="text-xs font-mono text-[#E5E7EB]">Agent Pending Execution</p>
-                <p className="text-[11px] text-[#9CA3AF]">
+              <div className="p-10 text-center space-y-2 rounded-xl bg-[#090B10] border border-[#1E2330]">
+                <Clock className="w-7 h-7 text-[#949BA8]/40 mx-auto" />
+                <p className="text-xs font-mono text-[#EDEDEF]">Agent Pending Execution</p>
+                <p className="text-[11px] text-[#949BA8] max-w-sm mx-auto">
                   This node executes sequentially when previous agents in the LangGraph DAG complete.
                 </p>
               </div>
             ) : selectedState.status === 'running' ? (
-              <div className="p-8 text-center space-y-3 rounded bg-[#11141B] border border-[#55C7D9]/30">
-                <Activity className="w-7 h-7 text-[#55C7D9] animate-spin mx-auto" />
-                <p className="text-xs font-mono font-medium text-[#55C7D9]">
+              <div className="p-10 text-center space-y-3 rounded-xl bg-[#090B10] border border-[#06B6D4]/30">
+                <Activity className="w-8 h-8 text-[#38BDF8] animate-spin mx-auto" />
+                <p className="text-xs font-mono font-medium text-[#38BDF8]">
                   Generating Output via Local Ollama...
                 </p>
-                <p className="text-[11px] text-[#9CA3AF] max-w-sm mx-auto">
+                <p className="text-[11px] text-[#949BA8] max-w-sm mx-auto">
                   Performing inference with qwen3.5:4b. Live polling will update results automatically upon completion.
                 </p>
               </div>
             ) : selectedState.status === 'awaiting_approval' ? (
-              <div className="p-6 text-center space-y-3 rounded bg-[#E6AA57]/10 border border-[#E6AA57]/40">
-                <ShieldAlert className="w-7 h-7 text-[#E6AA57] mx-auto animate-pulse" />
-                <p className="text-xs font-mono font-medium text-[#E6AA57]">
+              <div className="p-8 text-center space-y-3 rounded-xl bg-[#F59E0B]/10 border border-[#F59E0B]/40">
+                <ShieldAlert className="w-8 h-8 text-[#FBBF24] mx-auto animate-pulse" />
+                <p className="text-xs font-mono font-medium text-[#FBBF24]">
                   Human-in-the-Loop Governance Gate Paused
                 </p>
-                <p className="text-[11px] text-[#E5E7EB] max-w-md mx-auto">
+                <p className="text-[11px] text-[#EDEDEF] max-w-md mx-auto">
                   The Verification Agent will resume immediately once human authorization is approved via the gate control banner above.
                 </p>
               </div>
             ) : selectedState.status === 'rejected_at_gate' ? (
-              <div className="p-5 rounded bg-[#E6AA57]/10 border border-[#E6AA57]/40 space-y-3 font-mono">
-                <div className="flex items-center gap-2 text-[#E6AA57] text-xs font-semibold">
+              <div className="p-5 rounded-xl bg-[#F59E0B]/10 border border-[#F59E0B]/40 space-y-3 font-mono">
+                <div className="flex items-center gap-2 text-[#FBBF24] text-xs font-semibold">
                   <ShieldAlert className="w-4 h-4" />
                   HUMAN-IN-THE-LOOP GOVERNANCE REJECTION
                 </div>
                 <div className="space-y-1">
-                  <span className="text-[10px] text-[#9CA3AF] uppercase">Rejection Reason:</span>
-                  <p className="text-xs text-[#E5E7EB] bg-[#0B0D12] p-3 rounded border border-[#252B36] font-sans">
+                  <span className="text-[10px] text-[#949BA8] uppercase">Rejection Reason:</span>
+                  <p className="text-xs text-[#EDEDEF] bg-[#08090C] p-3 rounded-lg border border-[#1E2330] font-sans">
                     {extractRejectionReason(selectedState.outputData) || 'Task rejected by Human-in-the-Loop governance.'}
                   </p>
                 </div>
-                <div className="p-3 rounded bg-[#0B0D12] border border-[#252B36] text-[11px] text-[#9CA3AF] space-y-1">
-                  <p className="text-[#E5E7EB] font-medium">Verification Model Execution Bypassed</p>
+                <div className="p-3.5 rounded-lg bg-[#08090C] border border-[#1E2330] text-[11px] text-[#949BA8] space-y-1">
+                  <p className="text-[#EDEDEF] font-medium">Verification Model Execution Bypassed</p>
                   <p>
                     This task was aborted by a human operator prior to Verification Agent execution.
                     The Verifier LLM was not invoked, and 0 inference tokens were consumed.
@@ -978,20 +988,20 @@ export const AgentWorkspacePage: React.FC = () => {
                 </div>
               </div>
             ) : selectedState.status === 'not_executed' ? (
-              <div className="p-8 text-center space-y-2 rounded bg-[#11141B] border border-[#252B36]">
-                <XCircle className="w-6 h-6 text-[#9CA3AF]/40 mx-auto" />
-                <p className="text-xs font-mono text-[#E5E7EB]">Agent Not Executed</p>
-                <p className="text-[11px] text-[#9CA3AF] max-w-sm mx-auto">
+              <div className="p-10 text-center space-y-2 rounded-xl bg-[#090B10] border border-[#1E2330]">
+                <XCircle className="w-7 h-7 text-[#949BA8]/40 mx-auto" />
+                <p className="text-xs font-mono text-[#EDEDEF]">Agent Not Executed</p>
+                <p className="text-[11px] text-[#949BA8] max-w-sm mx-auto">
                   This agent was bypassed and never executed because workflow progression was halted at the governance gate.
                 </p>
               </div>
             ) : selectedState.status === 'failed' ? (
-              <div className="p-4 rounded bg-[#E16D78]/10 border border-[#E16D78]/40 space-y-2">
-                <div className="flex items-center gap-2 text-[#E16D78] font-mono text-xs font-semibold">
+              <div className="p-5 rounded-xl bg-[#F43F5E]/10 border border-[#F43F5E]/40 space-y-2">
+                <div className="flex items-center gap-2 text-[#FB7185] font-mono text-xs font-semibold">
                   <AlertTriangle className="w-4 h-4" />
                   Agent Execution Failed
                 </div>
-                <p className="text-xs font-mono text-[#E5E7EB] whitespace-pre-wrap">
+                <p className="text-xs font-mono text-[#EDEDEF] whitespace-pre-wrap">
                   {selectedState.outputData || task?.error_message || 'Unknown execution failure.'}
                 </p>
               </div>
@@ -1001,10 +1011,10 @@ export const AgentWorkspacePage: React.FC = () => {
                 {/* 1. PLANNER AGENT OUTPUT */}
                 {selectedState.meta.id === 'planner' && (
                   <div className="space-y-2">
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#9CA3AF]">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#949BA8]">
                       Generated Plan Steps &amp; Strategy
                     </span>
-                    <div className="p-3.5 rounded-md bg-[#0B0D12] border border-[#252B36] font-mono text-xs text-[#E5E7EB] space-y-2 whitespace-pre-wrap leading-relaxed">
+                    <div className="p-4 rounded-xl bg-[#090B10] border border-[#1E2330] font-mono text-xs text-[#EDEDEF] space-y-2 whitespace-pre-wrap leading-relaxed shadow-inner">
                       {selectedState.outputData || 'No plan data recorded.'}
                     </div>
                   </div>
@@ -1013,12 +1023,12 @@ export const AgentWorkspacePage: React.FC = () => {
                 {/* 2. RESEARCHER AGENT OUTPUT */}
                 {selectedState.meta.id === 'researcher' && (
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-[#9CA3AF]">
+                    <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-[#949BA8]">
                       <span>Synthesized Evidence &amp; Knowledge Base Chunks</span>
-                      <span className="text-[#55C7D9]">Tavily Web + ChromaDB</span>
+                      <span className="text-[#38BDF8] font-medium">Tavily Web + ChromaDB</span>
                     </div>
 
-                    <div className="p-3.5 rounded-md bg-[#0B0D12] border border-[#252B36] font-mono text-xs text-[#E5E7EB] whitespace-pre-wrap leading-relaxed space-y-2 max-h-96 overflow-y-auto">
+                    <div className="p-4 rounded-xl bg-[#090B10] border border-[#1E2330] font-mono text-xs text-[#EDEDEF] whitespace-pre-wrap leading-relaxed space-y-2 max-h-96 overflow-y-auto shadow-inner">
                       {selectedState.outputData || 'No research data recorded.'}
                     </div>
                   </div>
@@ -1027,10 +1037,10 @@ export const AgentWorkspacePage: React.FC = () => {
                 {/* 3. ANALYST AGENT OUTPUT */}
                 {selectedState.meta.id === 'analyst' && (
                   <div className="space-y-2">
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#9CA3AF]">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#949BA8]">
                       Synthesized Analysis &amp; Strategic Tradeoffs
                     </span>
-                    <div className="p-3.5 rounded-md bg-[#0B0D12] border border-[#252B36] font-mono text-xs text-[#E5E7EB] space-y-2 whitespace-pre-wrap leading-relaxed">
+                    <div className="p-4 rounded-xl bg-[#090B10] border border-[#1E2330] font-mono text-xs text-[#EDEDEF] space-y-2 whitespace-pre-wrap leading-relaxed shadow-inner">
                       {selectedState.outputData || 'No analysis data recorded.'}
                     </div>
                   </div>
@@ -1039,15 +1049,15 @@ export const AgentWorkspacePage: React.FC = () => {
                 {/* 4. VERIFIER AGENT OUTPUT */}
                 {selectedState.meta.id === 'verifier' && (
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-[#9CA3AF]">
+                    <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-[#949BA8]">
                       <span>Fact-Check &amp; Numerical Consistency Audit</span>
-                      <span className="text-[#36B98A] flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" />
+                      <span className="text-[#34D399] flex items-center gap-1 font-medium">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
                         Grounded Verification
                       </span>
                     </div>
 
-                    <div className="p-3.5 rounded-md bg-[#0B0D12] border border-[#252B36] font-mono text-xs text-[#E5E7EB] whitespace-pre-wrap leading-relaxed space-y-2 max-h-96 overflow-y-auto">
+                    <div className="p-4 rounded-xl bg-[#090B10] border border-[#1E2330] font-mono text-xs text-[#EDEDEF] whitespace-pre-wrap leading-relaxed space-y-2 max-h-96 overflow-y-auto shadow-inner">
                       {selectedState.outputData || 'No verification data recorded.'}
                     </div>
                   </div>
@@ -1057,7 +1067,7 @@ export const AgentWorkspacePage: React.FC = () => {
                 {selectedState.meta.id === 'reporter' && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-[#9CA3AF]">
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-[#949BA8]">
                         Final Executive Markdown Report
                       </span>
 
@@ -1066,11 +1076,11 @@ export const AgentWorkspacePage: React.FC = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => handleCopyReport(selectedState.outputData!)}
-                          className="text-xs font-mono"
+                          className="text-xs font-mono h-7"
                         >
                           {copiedReport ? (
                             <>
-                              <Check className="w-3 h-3 text-[#36B98A]" />
+                              <Check className="w-3 h-3 text-[#34D399]" />
                               <span>Copied</span>
                             </>
                           ) : (
@@ -1083,23 +1093,23 @@ export const AgentWorkspacePage: React.FC = () => {
                       )}
                     </div>
 
-                    <div className="p-4 rounded-md bg-[#0B0D12] border border-[#252B36] font-sans text-xs text-[#E5E7EB] space-y-3 max-h-96 overflow-y-auto whitespace-pre-wrap leading-relaxed">
+                    <div className="p-4 rounded-xl bg-[#090B10] border border-[#1E2330] font-sans text-xs text-[#EDEDEF] space-y-3 max-h-96 overflow-y-auto whitespace-pre-wrap leading-relaxed shadow-inner">
                       {selectedState.outputData ||
                         task?.result_summary ||
                         'No executive report recorded.'}
                     </div>
 
                     {reports && reports.length > 0 && (
-                      <div className="p-3 rounded bg-[#11141B] border border-[#252B36] flex items-center justify-between">
+                      <div className="p-3.5 rounded-xl bg-[#0C0E14] border border-[#1E2330] flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <FileCheck2 className="w-4 h-4 text-[#36B98A]" />
-                          <span className="text-xs text-[#E5E7EB]">
+                          <FileCheck2 className="w-4 h-4 text-[#34D399]" />
+                          <span className="text-xs text-[#EDEDEF] font-medium">
                             Executive report archived in persistent database
                           </span>
                         </div>
                         <Link
                           to="/reports"
-                          className="text-xs font-mono text-[#8B7CFF] hover:underline flex items-center gap-1"
+                          className="text-xs font-mono text-[#818CF8] hover:underline flex items-center gap-1 font-medium"
                         >
                           <span>Open Reports Browser</span>
                           <ExternalLink className="w-3 h-3" />
@@ -1116,60 +1126,60 @@ export const AgentWorkspacePage: React.FC = () => {
         {/* Right Column (1/3): Execution Event Stream Log */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-bold text-[#E5E7EB] uppercase tracking-wider font-mono flex items-center gap-2">
-              <Terminal className="w-3.5 h-3.5 text-[#8B7CFF]" />
+            <h2 className="text-xs font-bold text-[#EDEDEF] uppercase tracking-wider font-mono flex items-center gap-2">
+              <Terminal className="w-3.5 h-3.5 text-[#818CF8]" />
               Database Event Logs
             </h2>
-            <span className="text-[10px] font-mono text-[#9CA3AF]">
+            <span className="text-[10px] font-mono text-[#949BA8]">
               SQLite AgentRun Stream
             </span>
           </div>
 
-          <div className="rounded-lg bg-[#0B0D12] border border-[#252B36] p-3 text-xs font-mono space-y-3 max-h-[520px] overflow-y-auto">
+          <div className="rounded-xl bg-[#08090C] border border-[#1E2330] p-3 text-xs font-mono space-y-3 max-h-[520px] overflow-y-auto shadow-inner">
             {attempts.length > 0 ? (
               <div className="space-y-4">
                 {attempts.map((attempt) => (
                   <div
                     key={attempt.attemptNumber}
-                    className={`rounded-lg border p-3 space-y-2.5 ${
+                    className={`rounded-xl border p-3.5 space-y-2.5 transition-colors ${
                       attempt.isLatest
-                        ? 'bg-[#151922] border-[#343C4B]'
-                        : 'bg-[#11141B]/80 border-[#252B36] opacity-85'
+                        ? 'bg-[#11141D] border-[#2D3447] shadow-sm'
+                        : 'bg-[#0C0E14]/90 border-[#1E2330] opacity-80'
                     }`}
                   >
                     {/* Attempt Header */}
-                    <div className="flex items-center justify-between pb-2 border-b border-[#252B36]">
+                    <div className="flex items-center justify-between pb-2 border-b border-[#1E2330]">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-[#E5E7EB]">
+                        <span className="font-semibold text-[#EDEDEF]">
                           Attempt #{attempt.attemptNumber}
                         </span>
                         {attempt.isLatest && (
-                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#8B7CFF]/20 text-[#8B7CFF] border border-[#8B7CFF]/40 font-mono">
+                          <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#6366F1]/20 text-[#818CF8] border border-[#6366F1]/40 font-mono font-bold">
                             LATEST
                           </span>
                         )}
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] text-[#9CA3AF]">
+                        <span className="text-[10px] text-[#949BA8]">
                           {attempt.runs.length} {attempt.runs.length === 1 ? 'agent' : 'agents'}
                         </span>
                         {attempt.status === 'completed' && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#36B98A]/15 text-[#36B98A] border border-[#36B98A]/30">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#10B981]/15 text-[#34D399] border border-[#10B981]/30">
                             COMPLETED
                           </span>
                         )}
                         {attempt.status === 'rejected' && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#E6AA57]/15 text-[#E6AA57] border border-[#E6AA57]/30">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#F59E0B]/15 text-[#FBBF24] border border-[#F59E0B]/30">
                             REJECTED
                           </span>
                         )}
                         {attempt.status === 'failed' && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#E16D78]/15 text-[#E16D78] border border-[#E16D78]/30">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#F43F5E]/15 text-[#FB7185] border border-[#F43F5E]/30">
                             FAILED
                           </span>
                         )}
                         {attempt.status === 'running' && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#55C7D9]/15 text-[#55C7D9] border border-[#55C7D9]/30">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#06B6D4]/15 text-[#38BDF8] border border-[#06B6D4]/30">
                             RUNNING
                           </span>
                         )}
@@ -1183,37 +1193,37 @@ export const AgentWorkspacePage: React.FC = () => {
                         return (
                           <div
                             key={run.id}
-                            className="p-2 rounded bg-[#0B0D12] border border-[#252B36]/80 space-y-1"
+                            className="p-2.5 rounded-lg bg-[#08090C] border border-[#1E2330]/90 space-y-1 hover:border-[#2D3447] transition-colors"
                           >
                             <div className="flex items-center justify-between text-[11px]">
-                              <span className="font-medium text-[#8B7CFF]">
+                              <span className="font-medium text-[#818CF8]">
                                 {run.agent_name}
                               </span>
-                              <span className="text-[#9CA3AF] text-[10px]">
+                              <span className="text-[#949BA8] text-[10px]">
                                 {timeAgo(run.completed_at || run.started_at)}
                               </span>
                             </div>
 
-                            <div className="flex items-center justify-between text-[10px] text-[#9CA3AF]">
+                            <div className="flex items-center justify-between text-[10px] text-[#949BA8]">
                               <span>
                                 STATUS:{' '}
                                 {isRejection ? (
-                                  <span className="text-[#E6AA57]">REJECTED AT GATE</span>
+                                  <span className="text-[#FBBF24] font-medium">REJECTED AT GATE</span>
                                 ) : (
                                   <span
                                     className={
                                       run.status === 'completed'
-                                        ? 'text-[#36B98A]'
+                                        ? 'text-[#34D399] font-medium'
                                         : run.status === 'failed'
-                                        ? 'text-[#E16D78]'
-                                        : 'text-[#55C7D9]'
+                                        ? 'text-[#FB7185] font-medium'
+                                        : 'text-[#38BDF8] font-medium'
                                     }
                                   >
                                     {run.status.toUpperCase()}
                                   </span>
                                 )}
                               </span>
-                              <span>
+                              <span className="font-medium">
                                 {isRejection
                                   ? '0 ms (Marker)'
                                   : run.execution_time_ms
@@ -1223,13 +1233,13 @@ export const AgentWorkspacePage: React.FC = () => {
                             </div>
 
                             {isRejection ? (
-                              <p className="text-[10px] text-[#E6AA57] truncate">
-                                <span className="text-[#9CA3AF]/60">REASON:</span>{' '}
+                              <p className="text-[10px] text-[#FBBF24] truncate">
+                                <span className="text-[#949BA8]/70">REASON:</span>{' '}
                                 {extractRejectionReason(run.output_data)}
                               </p>
                             ) : run.input_data ? (
-                              <p className="text-[10px] text-[#9CA3AF] truncate">
-                                <span className="text-[#9CA3AF]/60">INPUT:</span> {run.input_data}
+                              <p className="text-[10px] text-[#949BA8] truncate">
+                                <span className="text-[#949BA8]/70">INPUT:</span> {run.input_data}
                               </p>
                             ) : null}
                           </div>
@@ -1240,10 +1250,10 @@ export const AgentWorkspacePage: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <div className="p-6 text-center space-y-2 text-[#9CA3AF]">
-                <Activity className="w-5 h-5 text-[#9CA3AF]/40 mx-auto" />
-                <p className="text-xs font-medium text-[#E5E7EB]">No execution logs yet</p>
-                <p className="text-[11px]">
+              <div className="p-8 text-center space-y-2 text-[#949BA8]">
+                <Activity className="w-5 h-5 text-[#949BA8]/40 mx-auto" />
+                <p className="text-xs font-medium text-[#EDEDEF]">No execution logs yet</p>
+                <p className="text-[11px] leading-relaxed">
                   When this task runs, live timestamps and event records from SQLite will stream here.
                 </p>
               </div>
@@ -1251,22 +1261,22 @@ export const AgentWorkspacePage: React.FC = () => {
 
             {/* Task state summary footer */}
             {task && (
-              <div className="pt-2 border-t border-[#252B36] text-[10px] text-[#9CA3AF] space-y-1">
+              <div className="pt-2.5 border-t border-[#1E2330] text-[10px] text-[#949BA8] space-y-1.5">
                 <div className="flex justify-between">
                   <span>Task Created:</span>
-                  <span className="text-[#E5E7EB]">{timeAgo(task.created_at)}</span>
+                  <span className="text-[#EDEDEF]">{timeAgo(task.created_at)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Execution Attempts:</span>
-                  <span className="text-[#8B7CFF] font-semibold">{attempts.length}</span>
+                  <span className="text-[#818CF8] font-semibold">{attempts.length}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Total Agent Runs:</span>
-                  <span className="text-[#55C7D9]">{task.agent_runs?.length || 0}</span>
+                  <span className="text-[#38BDF8] font-semibold">{task.agent_runs?.length || 0}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Current Task Status:</span>
-                  <span className="text-[#E5E7EB] uppercase font-bold">{task.status}</span>
+                  <span className="text-[#EDEDEF] uppercase font-bold">{task.status}</span>
                 </div>
               </div>
             )}

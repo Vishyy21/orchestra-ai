@@ -9,12 +9,14 @@ export const Card: React.FC<CardProps> = ({ className, hover = false, children, 
   return (
     <div
       className={cn(
-        'rounded-lg bg-[#151922] border border-[#252B36] p-4 text-[#E5E7EB]',
-        hover && 'hover:border-[#343C4B] transition-colors duration-150',
+        'rounded-xl bg-[#11141D] border border-[#1E2330] p-4 text-[#EDEDEF] shadow-card relative overflow-hidden',
+        hover && 'hover:border-[#2D3447] hover:shadow-hover transition-all duration-200',
         className
       )}
       {...props}
     >
+      {/* Subtle top edge specular highlight */}
+      <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.07] to-transparent pointer-events-none" />
       {children}
     </div>
   );

@@ -127,49 +127,49 @@ export const NewTaskPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto w-full space-y-6 animate-fade-in">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-6 animate-fade-in font-sans">
       {/* Header */}
-      <div className="pb-4 border-b border-[#252B36] flex items-center justify-between">
+      <div className="pb-4 border-b border-[#1E2330] flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-[#E5E7EB] flex items-center gap-2">
-            <PlusCircle className="w-5 h-5 text-[#8B7CFF]" />
-            Dispatch New Autonomous Task
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#EDEDEF] flex items-center gap-2.5">
+            <PlusCircle className="w-5 h-5 text-[#818CF8]" />
+            <span>Dispatch New Autonomous Task</span>
           </h1>
-          <p className="text-xs text-[#9CA3AF] mt-1">
+          <p className="text-xs sm:text-sm text-[#949BA8] mt-1">
             Submit a complex goal for coordinated multi-agent planning, research, and execution.
           </p>
         </div>
       </div>
 
       {submittedTask ? (
-        <Card className="p-6 border-[#36B98A]/30 bg-[#151922] space-y-4 text-center">
-          <div className="w-10 h-10 rounded-full bg-[#36B98A]/10 text-[#36B98A] flex items-center justify-center mx-auto">
-            <CheckCircle2 className="w-5 h-5" />
+        <Card className="p-8 border-[#10B981]/30 bg-[#11141D] space-y-5 text-center max-w-2xl mx-auto shadow-hover">
+          <div className="w-12 h-12 rounded-full bg-[#10B981]/15 text-[#34D399] border border-[#10B981]/30 flex items-center justify-center mx-auto shadow-sm">
+            <CheckCircle2 className="w-6 h-6" />
           </div>
-          <div className="space-y-1">
-            <h2 className="text-base font-semibold text-[#E5E7EB]">Task Committed to SQLite Database</h2>
-            <p className="text-xs text-[#9CA3AF] font-mono">
-              Task ID: {submittedTask.id}
+          <div className="space-y-1.5">
+            <h2 className="text-lg font-semibold text-[#EDEDEF] tracking-tight">Task Committed to SQLite Database</h2>
+            <p className="text-xs text-[#949BA8] font-mono">
+              Task ID: <span className="text-[#38BDF8]">{submittedTask.id}</span>
             </p>
           </div>
-          <div className="p-3 rounded bg-[#11141B] border border-[#252B36] text-left text-xs max-w-md mx-auto space-y-1 font-mono">
+          <div className="p-4 rounded-xl bg-[#090B10] border border-[#1E2330] text-left text-xs max-w-md mx-auto space-y-2 font-mono">
             <div className="flex justify-between">
-              <span className="text-[#9CA3AF]">Status:</span>
-              <span className="text-[#E6AA57] font-semibold">{submittedTask.status}</span>
+              <span className="text-[#949BA8]">Status:</span>
+              <span className="text-[#FBBF24] font-semibold uppercase">{submittedTask.status}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#9CA3AF]">Category:</span>
-              <span className="text-[#E5E7EB]">{submittedTask.category}</span>
+              <span className="text-[#949BA8]">Category:</span>
+              <span className="text-[#EDEDEF]">{submittedTask.category}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#9CA3AF]">Target:</span>
-              <span className="text-[#55C7D9]">Local Multi-Agent Fleet</span>
+              <span className="text-[#949BA8]">Target Fleet:</span>
+              <span className="text-[#38BDF8]">5 Specialized Local Agents</span>
             </div>
           </div>
-          <div className="flex justify-center gap-3 pt-2">
+          <div className="flex justify-center gap-3 pt-3">
             <Button
               variant="outline"
-              size="sm"
+              size="md"
               onClick={() => {
                 setSubmittedTask(null);
                 setTitle('');
@@ -180,7 +180,7 @@ export const NewTaskPage: React.FC = () => {
             </Button>
             <Button
               variant="primary"
-              size="sm"
+              size="md"
               onClick={() => navigate(`/agents?taskId=${submittedTask.id}`)}
             >
               <span>Inspect in Agent Workspace</span>
@@ -191,11 +191,11 @@ export const NewTaskPage: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Form (2/3) */}
-          <form onSubmit={handleSubmit} className="lg:col-span-2 space-y-4">
-            <Card className="p-5 space-y-4">
+          <form onSubmit={handleSubmit} className="lg:col-span-2 space-y-5">
+            <Card className="p-5 sm:p-6 space-y-5">
               {/* Task Title */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#E5E7EB] block">
+                <label className="text-xs font-semibold text-[#EDEDEF] block tracking-wide">
                   Task Title
                 </label>
                 <input
@@ -203,10 +203,10 @@ export const NewTaskPage: React.FC = () => {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g., Emerging agentic AI technologies research in 2026"
-                  className="w-full px-3 py-2 rounded-md bg-[#11141B] border border-[#252B36] text-xs text-[#E5E7EB] placeholder-[#9CA3AF]/40 focus:outline-none focus:border-[#8B7CFF] focus:ring-1 focus:ring-[#8B7CFF]/50 transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-lg bg-[#090B10] border border-[#1E2330] text-xs text-[#EDEDEF] placeholder-[#949BA8]/40 focus:outline-none focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1]/50 shadow-inner transition-colors"
                 />
                 {validationErrors.title && (
-                  <p className="text-[11px] text-[#E16D78] flex items-center gap-1">
+                  <p className="text-[11px] text-[#FB7185] flex items-center gap-1 mt-1 font-mono">
                     <AlertCircle className="w-3 h-3" />
                     {validationErrors.title}
                   </p>
@@ -215,7 +215,7 @@ export const NewTaskPage: React.FC = () => {
 
               {/* Task Prompt / Description */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-[#E5E7EB] block">
+                <label className="text-xs font-semibold text-[#EDEDEF] block tracking-wide">
                   Detailed Prompt &amp; Objectives
                 </label>
                 <textarea
@@ -223,10 +223,10 @@ export const NewTaskPage: React.FC = () => {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Describe your objective, requirements, specific questions to answer, constraints, or formats needed..."
-                  className="w-full px-3 py-2 rounded-md bg-[#11141B] border border-[#252B36] text-xs text-[#E5E7EB] placeholder-[#9CA3AF]/40 focus:outline-none focus:border-[#8B7CFF] focus:ring-1 focus:ring-[#8B7CFF]/50 transition-colors leading-relaxed"
+                  className="w-full p-3.5 rounded-lg bg-[#090B10] border border-[#1E2330] text-xs text-[#EDEDEF] placeholder-[#949BA8]/40 focus:outline-none focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1]/50 shadow-inner transition-colors leading-relaxed"
                 />
                 {validationErrors.description && (
-                  <p className="text-[11px] text-[#E16D78] flex items-center gap-1">
+                  <p className="text-[11px] text-[#FB7185] flex items-center gap-1 mt-1 font-mono">
                     <AlertCircle className="w-3 h-3" />
                     {validationErrors.description}
                   </p>
@@ -234,15 +234,15 @@ export const NewTaskPage: React.FC = () => {
               </div>
 
               {/* Category & Priority Selector */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-[#E5E7EB] block">
+                  <label className="text-xs font-semibold text-[#EDEDEF] block tracking-wide">
                     Domain Category
                   </label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-3 py-2 rounded-md bg-[#11141B] border border-[#252B36] text-xs text-[#E5E7EB] focus:outline-none focus:border-[#8B7CFF]"
+                    className="w-full px-3 py-2 rounded-lg bg-[#090B10] border border-[#1E2330] text-xs text-[#EDEDEF] focus:outline-none focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1]/50 shadow-inner cursor-pointer"
                   >
                     {CATEGORIES.map((cat) => (
                       <option key={cat.value} value={cat.value}>
@@ -253,19 +253,19 @@ export const NewTaskPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-[#E5E7EB] block">
+                  <label className="text-xs font-semibold text-[#EDEDEF] block tracking-wide">
                     Priority Dispatch
                   </label>
-                  <div className="grid grid-cols-4 gap-1">
+                  <div className="grid grid-cols-4 gap-1.5">
                     {PRIORITIES.map((pri) => (
                       <button
                         type="button"
                         key={pri.value}
                         onClick={() => setPriority(pri.value)}
-                        className={`py-1.5 text-[11px] font-mono rounded border transition-colors ${
+                        className={`py-2 text-[11px] font-mono rounded-lg border transition-all duration-150 ${
                           priority === pri.value
-                            ? 'bg-[#8B7CFF]/15 border-[#8B7CFF] text-[#8B7CFF] font-bold'
-                            : 'bg-[#11141B] border-[#252B36] text-[#9CA3AF] hover:text-[#E5E7EB]'
+                            ? 'bg-[#6366F1]/20 border-[#6366F1] text-[#A5B4FC] font-bold shadow-[0_0_10px_rgba(99,102,241,0.2)]'
+                            : 'bg-[#090B10] border-[#1E2330] text-[#949BA8] hover:text-[#EDEDEF] hover:border-[#2D3447]'
                         }`}
                       >
                         {pri.label}
@@ -276,15 +276,15 @@ export const NewTaskPage: React.FC = () => {
               </div>
 
               {/* Optional Knowledge Base Document Attachment */}
-              <div className="space-y-1.5 pt-2 border-t border-[#252B36]">
-                <label className="text-xs font-semibold text-[#E5E7EB] flex items-center gap-1.5">
-                  <Paperclip className="w-3.5 h-3.5 text-[#55C7D9]" />
+              <div className="space-y-1.5 pt-3 border-t border-[#1E2330]">
+                <label className="text-xs font-semibold text-[#EDEDEF] flex items-center gap-2 tracking-wide">
+                  <Paperclip className="w-3.5 h-3.5 text-[#38BDF8]" />
                   <span>Attach Knowledge Base Context (Optional)</span>
                 </label>
                 <select
                   value={selectedDocId}
                   onChange={(e) => setSelectedDocId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-md bg-[#11141B] border border-[#252B36] text-xs text-[#E5E7EB] focus:outline-none focus:border-[#8B7CFF]"
+                  className="w-full px-3 py-2 rounded-lg bg-[#090B10] border border-[#1E2330] text-xs text-[#EDEDEF] focus:outline-none focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1]/50 shadow-inner cursor-pointer"
                 >
                   <option value="">No document attached (Clean run)</option>
                   {documents?.map((doc) => (
@@ -293,70 +293,77 @@ export const NewTaskPage: React.FC = () => {
                     </option>
                   ))}
                 </select>
-                <p className="text-[10px] text-[#9CA3AF]">
-                  Selected document will be passed into the Research Agent for localized retrieval.
+                <p className="text-[10px] text-[#949BA8]">
+                  Selected document will be passed into the Research Agent for localized ChromaDB retrieval.
                 </p>
               </div>
 
               {/* Execution Options */}
-              <div className="space-y-2 pt-2 border-t border-[#252B36]">
-                <label className="text-xs font-semibold text-[#E5E7EB] flex items-center gap-1.5">
-                  <Sliders className="w-3.5 h-3.5 text-[#8B7CFF]" />
+              <div className="space-y-2.5 pt-3 border-t border-[#1E2330]">
+                <label className="text-xs font-semibold text-[#EDEDEF] flex items-center gap-2 tracking-wide">
+                  <Sliders className="w-3.5 h-3.5 text-[#818CF8]" />
                   <span>Execution Configuration</span>
                 </label>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                  <label className="flex items-center gap-2 p-2 rounded bg-[#11141B] border border-[#252B36] cursor-pointer">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                  <label className="flex items-center gap-2.5 p-3 rounded-lg bg-[#090B10] border border-[#1E2330] hover:border-[#2D3447] cursor-pointer transition-colors">
                     <input
                       type="checkbox"
                       checked={enableWebSearch}
                       onChange={(e) => setEnableWebSearch(e.target.checked)}
-                      className="rounded border-[#252B36] text-[#8B7CFF] focus:ring-0"
+                      className="rounded border-[#1E2330] text-[#6366F1] focus:ring-0 accent-[#6366F1]"
                     />
                     <div>
-                      <span className="font-medium text-[#E5E7EB] block">Tavily Web Search</span>
-                      <span className="text-[10px] text-[#9CA3AF] block">Enable live web search tool</span>
+                      <span className="font-medium text-[#EDEDEF] block">Tavily Web Search</span>
+                      <span className="text-[10px] text-[#949BA8] block">Enable live web search tool</span>
                     </div>
                   </label>
 
-                  <label className="flex items-center gap-2 p-2 rounded bg-[#11141B] border border-[#252B36] cursor-pointer">
+                  <label className="flex items-center gap-2.5 p-3 rounded-lg bg-[#090B10] border border-[#1E2330] hover:border-[#2D3447] cursor-pointer transition-colors">
                     <input
                       type="checkbox"
                       checked={enableTracing}
                       onChange={(e) => setEnableTracing(e.target.checked)}
-                      className="rounded border-[#252B36] text-[#8B7CFF] focus:ring-0"
+                      className="rounded border-[#1E2330] text-[#6366F1] focus:ring-0 accent-[#6366F1]"
                     />
                     <div>
-                      <span className="font-medium text-[#E5E7EB] block">LangSmith Tracing</span>
-                      <span className="text-[10px] text-[#9CA3AF] block">Record DAG telemetry</span>
+                      <span className="font-medium text-[#EDEDEF] block">LangSmith Tracing</span>
+                      <span className="text-[10px] text-[#949BA8] block">Record DAG telemetry</span>
                     </div>
                   </label>
 
-                  <label className="flex items-center gap-2 p-2 rounded bg-[#11141B] border border-[#252B36] cursor-pointer sm:col-span-2">
+                  <label className="flex items-center gap-2.5 p-3 rounded-lg bg-[#090B10] border border-[#1E2330] hover:border-[#F59E0B]/40 cursor-pointer transition-colors sm:col-span-2">
                     <input
                       type="checkbox"
                       checked={requireApproval}
                       onChange={(e) => setRequireApproval(e.target.checked)}
-                      className="rounded border-[#252B36] text-[#8B7CFF] focus:ring-0"
+                      className="rounded border-[#1E2330] text-[#F59E0B] focus:ring-0 accent-[#F59E0B]"
                     />
                     <div>
-                      <span className="font-medium text-[#E5E7EB] block">Human Approval Gate</span>
-                      <span className="text-[10px] text-[#9CA3AF] block">Require human sign-off before reporter execution</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-medium text-[#EDEDEF] block">Human Approval Gate</span>
+                        <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-[#F59E0B]/15 text-[#FBBF24] border border-[#F59E0B]/30">
+                          HITL
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-[#949BA8] block">
+                        Pause workflow before Verifier Agent; persists checkpoint in SQLite until approved
+                      </span>
                     </div>
                   </label>
                 </div>
               </div>
 
               {/* Submit Button */}
-              <div className="pt-3">
+              <div className="pt-2">
                 <Button
                   type="submit"
                   variant="primary"
                   size="lg"
-                  className="w-full text-xs"
+                  className="w-full text-xs h-10 shadow-glow"
                   isLoading={mutation.isPending}
                 >
-                  <PlusCircle className="w-4 h-4" />
+                  <PlusCircle className="w-4 h-4 mr-1.5" />
                   <span>Dispatch Task to Agent Pipeline</span>
                 </Button>
               </div>
@@ -366,31 +373,31 @@ export const NewTaskPage: React.FC = () => {
           {/* Presets Sidebar (1/3) */}
           <div className="space-y-4">
             <div className="space-y-1">
-              <h2 className="text-xs font-semibold text-[#E5E7EB] flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-[#E6AA57]" />
+              <h2 className="text-xs font-semibold text-[#EDEDEF] flex items-center gap-1.5 tracking-wide">
+                <Sparkles className="w-3.5 h-3.5 text-[#FBBF24]" />
                 <span>Quick-Start Presets</span>
               </h2>
-              <p className="text-[11px] text-[#9CA3AF]">
+              <p className="text-[11px] text-[#949BA8]">
                 Click any preset to prefill the task composer.
               </p>
             </div>
 
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {PRESETS.map((preset, idx) => (
                 <div
                   key={idx}
                   onClick={() => handleApplyPreset(preset)}
-                  className="p-3 rounded-lg bg-[#151922] border border-[#252B36] hover:border-[#8B7CFF]/40 cursor-pointer transition-all space-y-1.5 group select-none"
+                  className="p-3.5 rounded-xl bg-[#11141D] border border-[#1E2330] hover:border-[#6366F1]/50 shadow-card hover:shadow-hover cursor-pointer transition-all duration-150 space-y-2 group select-none relative overflow-hidden"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-[#E5E7EB] group-hover:text-[#8B7CFF] transition-colors truncate">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-[#EDEDEF] group-hover:text-[#818CF8] transition-colors truncate">
                       {preset.title}
                     </span>
-                    <Badge variant="neutral" className="text-[9px] uppercase font-mono">
+                    <Badge variant="neutral" className="text-[9px] uppercase font-mono shrink-0">
                       {preset.priority}
                     </Badge>
                   </div>
-                  <p className="text-[11px] text-[#9CA3AF] line-clamp-2 leading-relaxed">
+                  <p className="text-[11px] text-[#949BA8] line-clamp-2 leading-relaxed">
                     {preset.description}
                   </p>
                 </div>

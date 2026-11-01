@@ -37,7 +37,7 @@ export const OrchestrationFlow: React.FC<OrchestrationFlowProps> = ({
           role: 'DAG Synthesis & Decomposition',
           description: 'Decomposes complex requests into parallel subtasks and execution DAG.',
           status: activeNodeId === 'node-planner' ? 'active' : 'ready',
-          color: '#8B7CFF',
+          color: '#818CF8',
           iconName: 'GitBranch',
           currentTask: agentStates['planner']?.currentTask,
           duration: agentStates['planner']?.duration,
@@ -53,7 +53,7 @@ export const OrchestrationFlow: React.FC<OrchestrationFlowProps> = ({
           role: 'Tavily Web & Local RAG Search',
           description: 'Fetches live web intelligence and queries embedded document collections.',
           status: activeNodeId === 'node-researcher' ? 'active' : 'ready',
-          color: '#55C7D9',
+          color: '#38BDF8',
           iconName: 'Search',
           currentTask: agentStates['researcher']?.currentTask,
           duration: agentStates['researcher']?.duration,
@@ -69,7 +69,7 @@ export const OrchestrationFlow: React.FC<OrchestrationFlowProps> = ({
           role: 'Synthesis & Code Computation',
           description: 'Evaluates research artifacts, computes solutions, and synthesizes data.',
           status: activeNodeId === 'node-analyst' ? 'active' : 'ready',
-          color: '#8B7CFF',
+          color: '#818CF8',
           iconName: 'Brain',
           currentTask: agentStates['analyst']?.currentTask,
           duration: agentStates['analyst']?.duration,
@@ -85,7 +85,7 @@ export const OrchestrationFlow: React.FC<OrchestrationFlowProps> = ({
           role: 'Fact-Check & HITL Guardrails',
           description: 'Validates safety policies, cross-checks citations, and gates human approvals.',
           status: activeNodeId === 'node-verifier' ? 'active' : 'ready',
-          color: '#36B98A',
+          color: '#34D399',
           iconName: 'ShieldCheck',
           currentTask: agentStates['verifier']?.currentTask,
           duration: agentStates['verifier']?.duration,
@@ -101,7 +101,7 @@ export const OrchestrationFlow: React.FC<OrchestrationFlowProps> = ({
           role: 'Structured Markdown Compiler',
           description: 'Assembles verified multi-agent insights into polished executive reports.',
           status: activeNodeId === 'node-reporter' ? 'active' : 'ready',
-          color: '#E6AA57',
+          color: '#FBBF24',
           iconName: 'FileText',
           currentTask: agentStates['reporter']?.currentTask,
           duration: agentStates['reporter']?.duration,
@@ -120,12 +120,12 @@ export const OrchestrationFlow: React.FC<OrchestrationFlowProps> = ({
         target: 'node-researcher',
         animated: activeNodeId === 'node-planner' || activeNodeId === 'node-researcher',
         style: {
-          stroke: activeNodeId === 'node-planner' ? '#8B7CFF' : '#252B36',
+          stroke: activeNodeId === 'node-planner' ? '#818CF8' : '#1E2330',
           strokeWidth: 1.5,
         },
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          color: activeNodeId === 'node-planner' ? '#8B7CFF' : '#343C4B',
+          color: activeNodeId === 'node-planner' ? '#818CF8' : '#2D3447',
           width: 14,
           height: 14,
         },
@@ -136,12 +136,12 @@ export const OrchestrationFlow: React.FC<OrchestrationFlowProps> = ({
         target: 'node-analyst',
         animated: activeNodeId === 'node-researcher' || activeNodeId === 'node-analyst',
         style: {
-          stroke: activeNodeId === 'node-researcher' ? '#55C7D9' : '#252B36',
+          stroke: activeNodeId === 'node-researcher' ? '#38BDF8' : '#1E2330',
           strokeWidth: 1.5,
         },
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          color: activeNodeId === 'node-researcher' ? '#55C7D9' : '#343C4B',
+          color: activeNodeId === 'node-researcher' ? '#38BDF8' : '#2D3447',
           width: 14,
           height: 14,
         },
@@ -152,12 +152,12 @@ export const OrchestrationFlow: React.FC<OrchestrationFlowProps> = ({
         target: 'node-verifier',
         animated: activeNodeId === 'node-analyst' || activeNodeId === 'node-verifier',
         style: {
-          stroke: activeNodeId === 'node-analyst' ? '#8B7CFF' : '#252B36',
+          stroke: activeNodeId === 'node-analyst' ? '#818CF8' : '#1E2330',
           strokeWidth: 1.5,
         },
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          color: activeNodeId === 'node-analyst' ? '#8B7CFF' : '#343C4B',
+          color: activeNodeId === 'node-analyst' ? '#818CF8' : '#2D3447',
           width: 14,
           height: 14,
         },
@@ -168,12 +168,12 @@ export const OrchestrationFlow: React.FC<OrchestrationFlowProps> = ({
         target: 'node-reporter',
         animated: activeNodeId === 'node-verifier' || activeNodeId === 'node-reporter',
         style: {
-          stroke: activeNodeId === 'node-verifier' ? '#36B98A' : '#252B36',
+          stroke: activeNodeId === 'node-verifier' ? '#34D399' : '#1E2330',
           strokeWidth: 1.5,
         },
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          color: activeNodeId === 'node-verifier' ? '#36B98A' : '#343C4B',
+          color: activeNodeId === 'node-verifier' ? '#34D399' : '#2D3447',
           width: 14,
           height: 14,
         },
@@ -185,7 +185,7 @@ export const OrchestrationFlow: React.FC<OrchestrationFlowProps> = ({
   return (
     <div
       style={{ height }}
-      className="w-full rounded-lg bg-[#0B0D12] border border-[#252B36] relative overflow-hidden"
+      className="w-full rounded-xl bg-[#08090C] border border-[#1E2330] relative overflow-hidden shadow-inner"
     >
       <ReactFlow
         nodes={initialNodes}
@@ -201,7 +201,7 @@ export const OrchestrationFlow: React.FC<OrchestrationFlowProps> = ({
           variant={BackgroundVariant.Dots}
           gap={18}
           size={1}
-          color="#1D222B"
+          color="#161A24"
         />
         <Controls
           showInteractive={false}

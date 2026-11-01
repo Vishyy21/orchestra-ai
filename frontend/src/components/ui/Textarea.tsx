@@ -12,21 +12,21 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="w-full space-y-1.5">
         {label && (
-          <label className="block text-xs font-medium text-foreground/80 tracking-wide">
+          <label className="block text-xs font-medium text-[#EDEDEF]/90 tracking-wide">
             {label}
           </label>
         )}
         <textarea
           ref={ref}
           className={cn(
-            'w-full min-h-[100px] p-3 rounded bg-surface-shell border border-border text-foreground text-sm placeholder:text-foreground/40 transition-colors focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/40 disabled:opacity-50 disabled:cursor-not-allowed',
-            error && 'border-rose focus:border-rose focus:ring-rose/30',
+            'w-full p-3 rounded-lg bg-[#090B10] border border-[#1E2330] text-[#EDEDEF] text-xs placeholder:text-[#949BA8]/40 transition-all duration-150 focus:outline-none focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1]/50 shadow-inner disabled:opacity-50 disabled:cursor-not-allowed leading-relaxed',
+            error && 'border-[#F43F5E] focus:border-[#F43F5E] focus:ring-[#F43F5E]/30',
             className
           )}
           {...props}
         />
-        {hint && !error && <p className="text-[11px] text-foreground/50">{hint}</p>}
-        {error && <p className="text-[11px] text-rose font-medium">{error}</p>}
+        {hint && !error && <p className="text-[11px] text-[#949BA8]">{hint}</p>}
+        {error && <p className="text-[11px] text-[#FB7185] font-medium">{error}</p>}
       </div>
     );
   }

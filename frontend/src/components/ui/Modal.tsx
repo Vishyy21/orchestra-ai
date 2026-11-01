@@ -43,30 +43,33 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-background/80 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-[#08090C]/80 backdrop-blur-md transition-opacity"
         onClick={onClose}
       />
 
       {/* Modal Dialog Box */}
       <div
-        className={`relative w-full ${maxWidthClasses[maxWidth]} bg-surface-card border border-border rounded-lg shadow-2xl p-6 z-10 overflow-hidden transform transition-all`}
+        className={`relative w-full ${maxWidthClasses[maxWidth]} bg-[#11141D] border border-[#1E2330] rounded-xl shadow-dropdown p-6 z-10 overflow-hidden transform animate-scale-in`}
       >
-        <div className="flex items-start justify-between pb-4 border-b border-border mb-4">
+        {/* Specular top highlight */}
+        <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/[0.1] to-transparent pointer-events-none" />
+
+        <div className="flex items-start justify-between pb-4 border-b border-[#1E2330] mb-4">
           <div>
-            <h3 className="text-base font-semibold text-foreground tracking-tight">{title}</h3>
-            {subtitle && <p className="text-xs text-foreground/50 mt-0.5">{subtitle}</p>}
+            <h3 className="text-base font-semibold text-[#EDEDEF] tracking-tight">{title}</h3>
+            {subtitle && <p className="text-xs text-[#949BA8] mt-0.5">{subtitle}</p>}
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded flex items-center justify-center text-foreground/50 hover:text-foreground hover:bg-surface-elevated transition-colors"
+            className="p-1 rounded-md text-[#949BA8] hover:text-[#EDEDEF] hover:bg-[#1A202E] transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
-        <div className="max-h-[75vh] overflow-y-auto">{children}</div>
+        <div>{children}</div>
       </div>
     </div>
   );

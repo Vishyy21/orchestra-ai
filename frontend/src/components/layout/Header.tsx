@@ -8,19 +8,19 @@ export const Header: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <header className="h-13 px-5 border-b border-[#252B36] bg-[#11141B] sticky top-0 z-40 flex items-center justify-between select-none">
+    <header className="h-14 px-5 border-b border-[#1E2330] bg-[#0C0E14]/90 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between select-none">
       {/* Brand Anchor */}
       <div className="flex items-center gap-6">
         <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="w-7 h-7 rounded bg-[#151922] border border-[#252B36] flex items-center justify-center p-1 group-hover:border-[#8B7CFF] transition-colors">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#1E2435] to-[#11141D] border border-[#2D3447] flex items-center justify-center p-1 group-hover:border-[#6366F1]/60 group-hover:shadow-[0_0_12px_rgba(99,102,241,0.2)] transition-all duration-200">
             <img src="/logo.svg" alt="Orchestra AI Logo" className="w-full h-full" />
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
-              <span className="font-bold tracking-tight text-sm text-[#E5E7EB] font-sans group-hover:text-[#8B7CFF] transition-colors">
+              <span className="font-bold tracking-tight text-xs sm:text-sm text-[#EDEDEF] font-sans group-hover:text-[#818CF8] transition-colors">
                 ORCHESTRA AI
               </span>
-              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#151922] text-[#55C7D9] border border-[#252B36]">
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-[#151924] text-[#38BDF8] border border-[#1E2330]">
                 v1.0 Local
               </span>
             </div>
@@ -43,16 +43,16 @@ export const Header: React.FC = () => {
           <span>New Task</span>
         </Button>
 
-        <div className="h-4 w-[1px] bg-[#252B36] mx-0.5" />
+        <div className="h-4 w-[1px] bg-[#1E2330] mx-0.5" />
 
         {/* Operator Profile */}
         <div className="flex items-center gap-2 pl-1">
-          <div className="w-6 h-6 rounded bg-[#8B7CFF]/15 border border-[#8B7CFF]/30 flex items-center justify-center text-[#8B7CFF] font-mono text-[10px] font-bold">
+          <div className="w-6 h-6 rounded-full bg-[#6366F1]/15 border border-[#6366F1]/30 flex items-center justify-center text-[#818CF8] font-mono text-[10px] font-bold shadow-sm">
             OA
           </div>
           <div className="hidden lg:flex flex-col text-left">
-            <span className="text-[11px] font-medium text-[#E5E7EB] leading-tight">Lead Architect</span>
-            <span className="text-[10px] font-mono text-[#9CA3AF]">Local Root (NVIDIA)</span>
+            <span className="text-[11px] font-medium text-[#EDEDEF] leading-tight">Lead Architect</span>
+            <span className="text-[10px] font-mono text-[#949BA8]">Local Host (NVIDIA)</span>
           </div>
         </div>
       </div>

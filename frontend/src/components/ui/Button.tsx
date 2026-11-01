@@ -10,19 +10,19 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', isLoading, disabled, children, ...props }, ref) => {
     const baseStyles =
-      'inline-flex items-center justify-center font-medium rounded-md transition-all duration-150 focus:outline-none focus:ring-1 focus:ring-accent/50 disabled:opacity-50 disabled:cursor-not-allowed select-none text-xs';
+      'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#6366F1]/40 disabled:opacity-50 disabled:cursor-not-allowed select-none text-xs';
 
     const variants = {
       primary:
-        'bg-[#8B7CFF] hover:bg-[#7A69FA] text-white shadow-sm font-semibold active:scale-[0.99]',
+        'bg-gradient-to-b from-[#6366F1] to-[#4F46E5] hover:from-[#7073F3] hover:to-[#574FE8] text-white shadow-[0_1px_2px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.2)] border border-[#4338CA] active:scale-[0.98]',
       secondary:
-        'bg-[#151922] hover:bg-[#1E2430] text-[#E5E7EB] border border-[#252B36] hover:border-[#343C4B] active:scale-[0.99]',
+        'bg-[#151924] hover:bg-[#1A202E] text-[#EDEDEF] border border-[#1E2330] hover:border-[#2D3447] shadow-sm active:scale-[0.98]',
       outline:
-        'bg-transparent hover:bg-[#151922] text-[#E5E7EB] border border-[#252B36] hover:border-[#343C4B] active:scale-[0.99]',
+        'bg-transparent hover:bg-[#151924] text-[#EDEDEF] border border-[#1E2330] hover:border-[#2D3447] active:scale-[0.98]',
       ghost:
-        'bg-transparent hover:bg-[#151922] text-[#9CA3AF] hover:text-[#E5E7EB] active:scale-[0.99]',
+        'bg-transparent hover:bg-[#151924] text-[#949BA8] hover:text-[#EDEDEF] active:scale-[0.98]',
       danger:
-        'bg-[#E16D78]/10 hover:bg-[#E16D78]/20 text-[#E16D78] border border-[#E16D78]/30 active:scale-[0.99]',
+        'bg-[#F43F5E]/10 hover:bg-[#F43F5E]/20 text-[#FB7185] border border-[#F43F5E]/30 active:scale-[0.98]',
     };
 
     const sizes = {

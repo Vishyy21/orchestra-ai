@@ -18,12 +18,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   onAction,
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center p-12 text-center rounded-lg border border-dashed border-border/80 bg-surface-card/40 my-4">
-      <div className="w-12 h-12 rounded-lg bg-surface-elevated/60 border border-border flex items-center justify-center text-foreground/50 mb-4">
-        <Icon className="w-6 h-6 text-primary-light/80" />
+    <div className="flex flex-col items-center justify-center p-12 text-center rounded-xl border border-dashed border-[#1E2330] bg-[#11141D]/50 my-4 shadow-card">
+      <div className="w-12 h-12 rounded-xl bg-[#090B10] border border-[#1E2330] flex items-center justify-center text-[#949BA8] mb-4 shadow-inner">
+        <Icon className="w-6 h-6 text-[#818CF8]" />
       </div>
-      <h3 className="text-base font-semibold text-foreground tracking-tight mb-1">{title}</h3>
-      <p className="text-xs text-foreground/60 max-w-sm mb-6 leading-relaxed">{description}</p>
+      <h3 className="text-base font-semibold text-[#EDEDEF] tracking-tight mb-1">{title}</h3>
+      <p className="text-xs text-[#949BA8] max-w-sm mb-6 leading-relaxed">{description}</p>
       {actionLabel && onAction && (
         <Button variant="primary" size="sm" onClick={onAction}>
           {actionLabel}

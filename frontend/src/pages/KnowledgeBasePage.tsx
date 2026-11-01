@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
-import { Badge } from '../components/ui/Badge';
 import { formatBytes, formatDate } from '../lib/utils';
 import {
   Database,
@@ -11,6 +10,7 @@ import {
   AlertCircle,
   Search,
   HardDrive,
+  CheckCircle2,
 } from 'lucide-react';
 
 export const KnowledgeBasePage: React.FC = () => {
@@ -20,7 +20,7 @@ export const KnowledgeBasePage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const { data: documents } = useQuery({
+  const { data: documents, isLoading } = useQuery({
     queryKey: ['documents'],
     queryFn: api.getDocuments,
   });
@@ -60,29 +60,30 @@ export const KnowledgeBasePage: React.FC = () => {
   );
 
   return (
-    <div className="p-6 max-w-5xl mx-auto w-full space-y-6 animate-fade-in">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto w-full space-y-6 animate-fade-in font-sans">
       {/* Header */}
-      <div className="pb-4 border-b border-[#252B36] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div className="pb-4 border-b border-[#1E2330] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-[#E5E7EB] flex items-center gap-2">
-            <Database className="w-5 h-5 text-[#55C7D9]" />
-            Knowledge Base &amp; RAG Repository
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#EDEDEF] flex items-center gap-2.5">
+            <Database className="w-5 h-5 text-[#38BDF8]" />
+            <span>Knowledge Base &amp; RAG Repository</span>
           </h1>
-          <p className="text-xs text-[#9CA3AF] mt-1">
+          <p className="text-xs sm:text-sm text-[#949BA8] mt-1">
             Ground the Research Agent with internal technical manuals, whitepapers, and corpuses.
           </p>
         </div>
-        <div className="text-[11px] font-mono text-[#9CA3AF]">
-          ChromaDB Store: <span className="text-[#55C7D9]">data/chroma</span>
+        <div className="text-xs font-mono text-[#949BA8] px-3 py-1.5 rounded-lg bg-[#11141D] border border-[#1E2330] flex items-center gap-2">
+          <span>ChromaDB Store:</span>
+          <span className="text-[#38BDF8] font-medium">data/chroma</span>
         </div>
       </div>
 
       {/* Drag & Drop Upload Zone */}
       <div
-        className={`p-6 rounded-lg border-2 border-dashed text-center transition-all cursor-pointer select-none ${
+        className={`p-8 rounded-xl border-2 border-dashed text-center transition-all duration-200 cursor-pointer select-none relative overflow-hidden ${
           dragOver
-            ? 'border-[#8B7CFF] bg-[#8B7CFF]/5'
-            : 'border-[#252B36] hover:border-[#343C4B] bg-[#11141B]'
+            ? 'border-[#6366F1] bg-[#6366F1]/10 shadow-glow'
+            : 'border-[#1E2330] hover:border-[#2D3447] bg-[#11141D] hover:bg-[#151924]'
         }`}
         onDragOver={(e) => {
           e.preventDefault();
@@ -99,121 +100,116 @@ export const KnowledgeBasePage: React.FC = () => {
           accept=".pdf,.txt,.md,.json,.csv"
           onChange={(e) => handleFileSelect(e.target.files)}
         />
-        <div className="flex flex-col items-center justify-center space-y-2">
-          <div className="w-10 h-10 rounded-full bg-[#151922] border border-[#252B36] flex items-center justify-center text-[#55C7D9]">
-            <UploadCloud className="w-5 h-5" />
+        <div className="max-w-md mx-auto space-y-3">
+          <div className="w-12 h-12 rounded-xl bg-[#090B10] border border-[#1E2330] flex items-center justify-center mx-auto text-[#38BDF8] shadow-inner">
+            <UploadCloud className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-[#E5E7EB]">
-              {uploadMutation.isPending
-                ? 'Streaming file to storage...'
-                : 'Click to upload or drag and drop'}
+            <p className="text-sm font-semibold text-[#EDEDEF]">
+              Drop documents here, or <span className="text-[#818CF8] hover:underline">browse files</span>
             </p>
-            <p className="text-[11px] text-[#9CA3AF] mt-0.5 font-mono">
-              Supports PDF, Markdown, TXT, JSON, CSV (Max 25 MB)
+            <p className="text-xs text-[#949BA8] mt-1">
+              Supports PDF, Markdown, Plain Text, JSON, and CSV (Indexed via all-MiniLM-L6-v2)
             </p>
           </div>
+          {uploadMutation.isPending && (
+            <div className="flex items-center justify-center gap-2 text-xs font-mono text-[#38BDF8] pt-2">
+              <div className="w-3.5 h-3.5 border-2 border-[#38BDF8] border-t-transparent rounded-full animate-spin" />
+              <span>Chunking and vectorizing embeddings in ChromaDB...</span>
+            </div>
+          )}
+          {uploadError && (
+            <p className="text-xs text-[#FB7185] flex items-center justify-center gap-1 font-mono pt-1">
+              <AlertCircle className="w-3.5 h-3.5" />
+              {uploadError}
+            </p>
+          )}
         </div>
       </div>
 
-      {uploadError && (
-        <div className="p-3 rounded bg-[#E16D78]/10 border border-[#E16D78]/30 text-xs text-[#E16D78] flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{uploadError}</span>
-        </div>
-      )}
-
-      {/* Document Library Table */}
+      {/* Documents Repository Table */}
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-[#E5E7EB]">Repository Documents</h2>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#151922] text-[#9CA3AF] border border-[#252B36]">
-              {documents?.length ?? 0} files
+            <h2 className="text-sm font-semibold text-[#EDEDEF] tracking-tight">Indexed Documents</h2>
+            <span className="text-[10px] font-mono text-[#949BA8] px-2 py-0.5 rounded-full bg-[#11141D] border border-[#1E2330]">
+              {documents?.length || 0}
             </span>
           </div>
 
           <div className="relative w-full sm:w-64">
-            <Search className="w-3.5 h-3.5 text-[#9CA3AF] absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-3.5 h-3.5 text-[#949BA8] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
+              placeholder="Filter by filename..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Filter by filename..."
-              className="w-full pl-8 pr-3 py-1.5 rounded-md bg-[#151922] border border-[#252B36] text-xs text-[#E5E7EB] placeholder-[#9CA3AF]/50 focus:outline-none focus:border-[#8B7CFF]"
+              className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-[#090B10] border border-[#1E2330] text-xs text-[#EDEDEF] placeholder-[#949BA8]/50 focus:outline-none focus:border-[#6366F1] shadow-inner"
             />
           </div>
         </div>
 
-        <div className="rounded-lg bg-[#151922] border border-[#252B36] overflow-hidden text-xs">
-          {filteredDocs && filteredDocs.length > 0 ? (
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-[#252B36] bg-[#11141B]/70 text-[#9CA3AF] font-mono text-[11px]">
-                  <th className="py-2.5 px-4 font-normal">Document</th>
-                  <th className="py-2.5 px-3 font-normal">Size</th>
-                  <th className="py-2.5 px-3 font-normal">Chunks</th>
-                  <th className="py-2.5 px-3 font-normal hidden sm:table-cell">Uploaded</th>
-                  <th className="py-2.5 px-3 font-normal">Status</th>
-                  <th className="py-2.5 px-4 font-normal text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#252B36]/60">
-                {filteredDocs.map((doc) => (
-                  <tr key={doc.id} className="hover:bg-[#181D27]/50 transition-colors">
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2.5">
-                        <FileText className="w-4 h-4 text-[#55C7D9] shrink-0" />
-                        <div>
-                          <span className="font-medium text-[#E5E7EB] block truncate max-w-sm">
+        <div className="rounded-xl bg-[#11141D] border border-[#1E2330] shadow-card overflow-hidden">
+          {isLoading ? (
+            <div className="p-12 text-center text-xs font-mono text-[#949BA8] space-y-2">
+              <div className="w-5 h-5 border-2 border-[#38BDF8] border-t-transparent rounded-full animate-spin mx-auto" />
+              <p>Loading document registry...</p>
+            </div>
+          ) : filteredDocs && filteredDocs.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-[#1E2330] bg-[#0C0E14]/80 text-[#949BA8] font-mono text-[11px]">
+                    <th className="py-3 px-4 font-normal">File Name</th>
+                    <th className="py-3 px-3 font-normal">File Size</th>
+                    <th className="py-3 px-3 font-normal">Indexed In</th>
+                    <th className="py-3 px-3 font-normal">Created</th>
+                    <th className="py-3 px-4 font-normal text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#1E2330]/70">
+                  {filteredDocs.map((doc) => (
+                    <tr key={doc.id} className="hover:bg-[#151924]/70 transition-colors group">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2.5">
+                          <FileText className="w-4 h-4 text-[#38BDF8] shrink-0" />
+                          <span className="font-medium text-[#EDEDEF] group-hover:text-[#818CF8] transition-colors truncate max-w-xs">
                             {doc.filename}
                           </span>
-                          <span className="text-[10px] text-[#9CA3AF] font-mono block">
-                            ID: {doc.id.slice(0, 8)}...
-                          </span>
                         </div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 font-mono text-[#9CA3AF]">
-                      {formatBytes(doc.file_size)}
-                    </td>
-                    <td className="py-3 px-3 font-mono text-[11px]">
-                      {doc.chunk_count !== undefined && doc.chunk_count > 0 ? (
-                        <span className="text-[#55C7D9] font-medium">{doc.chunk_count} chunks</span>
-                      ) : (
-                        <span className="text-[#9CA3AF]/60">—</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-3 text-[#9CA3AF] hidden sm:table-cell text-[11px]">
-                      {formatDate(doc.uploaded_at)}
-                    </td>
-                    <td className="py-3 px-3">
-                      {doc.indexed ? (
-                        <Badge variant="success">Indexed in ChromaDB</Badge>
-                      ) : (
-                        <Badge variant="neutral">Stored (Unindexed)</Badge>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <button
-                        onClick={() => deleteMutation.mutate(doc.id)}
-                        disabled={deleteMutation.isPending}
-                        className="p-1 rounded text-[#9CA3AF] hover:text-[#E16D78] hover:bg-[#E16D78]/10 transition-colors"
-                        title="Delete document"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      </td>
+                      <td className="py-3 px-3 text-[#949BA8] font-mono text-[11px]">
+                        {formatBytes(doc.file_size)}
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#10B981]/12 text-[#34D399] border border-[#10B981]/25">
+                          <CheckCircle2 className="w-3 h-3" />
+                          ChromaDB Vector
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-[#949BA8] font-mono text-[11px] whitespace-nowrap">
+                        {formatDate(doc.uploaded_at)}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <button
+                          onClick={() => deleteMutation.mutate(doc.id)}
+                          className="p-1.5 rounded-lg text-[#949BA8] hover:text-[#FB7185] hover:bg-[#F43F5E]/10 transition-colors"
+                          title="Delete from knowledge base"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
-            <div className="p-8 text-center space-y-2 text-xs text-[#9CA3AF]">
-              <HardDrive className="w-6 h-6 text-[#9CA3AF]/40 mx-auto" />
-              <p className="font-semibold text-[#E5E7EB]">Knowledge base is empty</p>
+            <div className="p-12 text-center space-y-2 text-xs text-[#949BA8]">
+              <HardDrive className="w-8 h-8 text-[#949BA8]/40 mx-auto" />
+              <p className="font-semibold text-[#EDEDEF]">No documents indexed</p>
               <p className="text-[11px] max-w-sm mx-auto">
-                Drop PDF manuals or technical documents above to allow the Research Agent to cite local context.
+                Upload research papers, technical specs, or policies to ground the agent workflow.
               </p>
             </div>
           )}

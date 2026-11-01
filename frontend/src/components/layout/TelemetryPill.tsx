@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
-import { Cpu, RefreshCw, AlertCircle, CheckCircle2, ChevronDown, Terminal } from 'lucide-react';
+import { Cpu, RefreshCw, AlertCircle, ChevronDown, Zap } from 'lucide-react';
 import { Button } from '../ui/Button';
 
 export const TelemetryPill: React.FC = () => {
@@ -30,22 +30,22 @@ export const TelemetryPill: React.FC = () => {
   const getStatusColor = () => {
     switch (statusEnum) {
       case 'CONNECTED':
-        return 'text-[#36B98A] bg-[#36B98A]/10 border-[#36B98A]/20';
+        return 'text-[#34D399] bg-[#10B981]/12 border-[#10B981]/25';
       case 'MODEL_MISSING':
-        return 'text-[#E6AA57] bg-[#E6AA57]/10 border-[#E6AA57]/20';
+        return 'text-[#FBBF24] bg-[#F59E0B]/12 border-[#F59E0B]/25';
       default:
-        return 'text-[#E16D78] bg-[#E16D78]/10 border-[#E16D78]/20';
+        return 'text-[#FB7185] bg-[#F43F5E]/12 border-[#F43F5E]/25';
     }
   };
 
   const getDotColor = () => {
     switch (statusEnum) {
       case 'CONNECTED':
-        return 'bg-[#36B98A]';
+        return 'bg-[#10B981]';
       case 'MODEL_MISSING':
-        return 'bg-[#E6AA57]';
+        return 'bg-[#F59E0B]';
       default:
-        return 'bg-[#E16D78]';
+        return 'bg-[#F43F5E]';
     }
   };
 
@@ -65,16 +65,21 @@ export const TelemetryPill: React.FC = () => {
       <div className="flex items-center gap-2">
         <button
           onClick={() => setShowPopover(!showPopover)}
-          className="flex items-center gap-2.5 px-3 py-1 rounded-md bg-[#151922] border border-[#252B36] hover:border-[#343C4B] text-xs transition-colors"
+          className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-[#11141D] border border-[#1E2330] hover:border-[#2D3447] text-xs transition-all duration-150 shadow-card hover:shadow-hover"
           title="Click to view Ollama diagnostics"
         >
-          {/* Status Dot */}
-          <span className={`w-2 h-2 rounded-full ${getDotColor()}`} />
+          {/* Status Dot with pulse */}
+          <span className="relative flex h-2 w-2">
+            {isModelReady && (
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10B981] opacity-75" />
+            )}
+            <span className={`relative inline-flex rounded-full h-2 w-2 ${getDotColor()}`} />
+          </span>
 
           {/* Model info */}
           <div className="flex items-center gap-1.5 font-mono">
-            <span className="text-[#9CA3AF]">Ollama:</span>
-            <span className="text-[#E5E7EB] font-medium">{llmStatus?.target_model || 'qwen3.5:4b'}</span>
+            <span className="text-[#949BA8]">Ollama:</span>
+            <span className="text-[#EDEDEF] font-medium">{llmStatus?.target_model || 'qwen3.5:4b'}</span>
           </div>
 
           {/* Status Badge */}
@@ -83,14 +88,14 @@ export const TelemetryPill: React.FC = () => {
           </span>
 
           {/* GPU Hardware */}
-          <div className="hidden lg:flex items-center gap-1 text-[#9CA3AF] pl-1 border-l border-[#252B36]">
-            <Cpu className="w-3.5 h-3.5 text-[#55C7D9]" />
+          <div className="hidden lg:flex items-center gap-1 text-[#949BA8] pl-2 border-l border-[#1E2330]">
+            <Cpu className="w-3.5 h-3.5 text-[#38BDF8]" />
             <span className="font-mono text-[11px]">
               {health?.hardware?.gpu_model?.replace('NVIDIA GeForce ', '') || 'RTX 2050'} (4GB)
             </span>
           </div>
 
-          <ChevronDown className="w-3 h-3 text-[#9CA3AF]" />
+          <ChevronDown className={`w-3.5 h-3.5 text-[#949BA8] transition-transform duration-150 ${showPopover ? 'rotate-180' : ''}`} />
         </button>
 
         {/* Retry Button when Offline */}
@@ -100,87 +105,92 @@ export const TelemetryPill: React.FC = () => {
             size="sm"
             onClick={() => refetchLLM()}
             isLoading={isRefetchingLLM}
-            className="hidden sm:inline-flex"
-            title="Retry connecting to local Ollama service"
+            title="Probe Ollama connection"
+            className="text-xs h-8"
           >
             <RefreshCw className="w-3 h-3" />
-            <span>Retry</span>
+            <span className="hidden sm:inline">Probe</span>
           </Button>
         )}
       </div>
 
-      {/* Diagnostics Dropdown Popover */}
+      {/* Popover Diagnostics Panel */}
       {showPopover && (
-        <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setShowPopover(false)}
-          />
-          <div className="absolute top-full mt-2 left-0 w-80 p-3.5 rounded-lg bg-[#151922] border border-[#252B36] shadow-dropdown z-50 text-xs space-y-3 animate-fade-in font-sans">
-            <div className="flex items-center justify-between pb-2 border-b border-[#252B36]">
-              <div className="flex items-center gap-2">
-                {isModelReady ? (
-                  <CheckCircle2 className="w-4 h-4 text-[#36B98A]" />
-                ) : (
-                  <AlertCircle className="w-4 h-4 text-[#E16D78]" />
-                )}
-                <span className="font-semibold text-[#E5E7EB]">Ollama Health Diagnostics</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => refetchLLM()}
-                isLoading={isRefetchingLLM}
-                className="h-6 px-1.5 text-[10px]"
-              >
-                <RefreshCw className="w-3 h-3" />
-                <span>Probe</span>
-              </Button>
+        <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-80 sm:w-96 rounded-xl bg-[#11141D] border border-[#2D3447] shadow-dropdown p-4 z-50 animate-scale-in text-xs space-y-3 font-sans">
+          {/* Popover Header */}
+          <div className="flex items-center justify-between pb-2 border-b border-[#1E2330]">
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-[#6366F1]" />
+              <span className="font-semibold text-[#EDEDEF]">Local Inference Diagnostics</span>
             </div>
-
-            <div className="space-y-1.5 font-mono text-[11px]">
-              <div className="flex justify-between text-[#9CA3AF]">
-                <span>Runtime Status:</span>
-                <span className={`font-semibold ${isModelReady ? 'text-[#36B98A]' : 'text-[#E16D78]'}`}>
-                  {statusEnum}
-                </span>
-              </div>
-              <div className="flex justify-between text-[#9CA3AF]">
-                <span>Target Model:</span>
-                <span className="text-[#E5E7EB]">{llmStatus?.target_model || 'qwen3.5:4b'}</span>
-              </div>
-              <div className="flex justify-between text-[#9CA3AF]">
-                <span>Base Endpoint:</span>
-                <span className="text-[#E5E7EB]">{llmStatus?.base_url || 'http://localhost:11434'}</span>
-              </div>
-              <div className="flex justify-between text-[#9CA3AF]">
-                <span>GPU Acceleration:</span>
-                <span className="text-[#55C7D9]">
-                  {health?.hardware?.gpu_model || 'NVIDIA RTX 2050'} (4GB VRAM)
-                </span>
-              </div>
-            </div>
-
-            {!isModelReady && (
-              <div className="p-2.5 rounded bg-[#11141B] border border-[#252B36] space-y-1.5 text-[11px]">
-                <div className="flex items-center gap-1.5 font-semibold text-[#E6AA57]">
-                  <Terminal className="w-3.5 h-3.5" />
-                  <span>How to connect local Ollama:</span>
-                </div>
-                <p className="text-[#9CA3AF] leading-relaxed">
-                  {statusEnum === 'MODEL_MISSING'
-                    ? `Ollama is running, but '${llmStatus?.target_model || 'qwen3.5:4b'}' is not installed.`
-                    : 'Ollama is not running on port 11434.'}
-                </p>
-                <div className="p-1.5 rounded bg-[#0B0D12] text-[#8B7CFF] font-mono text-[10px] break-all select-all">
-                  {statusEnum === 'MODEL_MISSING'
-                    ? `ollama run ${llmStatus?.target_model || 'qwen3.5:4b'}`
-                    : '.\\scripts\\start_orchestra.ps1'}
-                </div>
-              </div>
-            )}
+            <button
+              onClick={() => setShowPopover(false)}
+              className="text-[#949BA8] hover:text-[#EDEDEF] text-xs"
+            >
+              ✕
+            </button>
           </div>
-        </>
+
+          {/* Diagnostic Details */}
+          <div className="space-y-2 font-mono text-[11px]">
+            <div className="flex justify-between p-2 rounded-lg bg-[#090B10] border border-[#1A1F2C]">
+              <span className="text-[#949BA8]">Host Endpoint:</span>
+              <span className="text-[#EDEDEF]">{llmStatus?.base_url || 'http://localhost:11434'}</span>
+            </div>
+            <div className="flex justify-between p-2 rounded-lg bg-[#090B10] border border-[#1A1F2C]">
+              <span className="text-[#949BA8]">Active Model:</span>
+              <span className="text-[#818CF8] font-bold">{llmStatus?.target_model || 'qwen3.5:4b'}</span>
+            </div>
+            <div className="flex justify-between p-2 rounded-lg bg-[#090B10] border border-[#1A1F2C]">
+              <span className="text-[#949BA8]">GPU Acceleration:</span>
+              <span className="text-[#38BDF8]">
+                {health?.hardware?.gpu_model || 'NVIDIA RTX 2050'} ({health?.hardware?.gpu_vram_mb || 4096} MB)
+              </span>
+            </div>
+            <div className="flex justify-between p-2 rounded-lg bg-[#090B10] border border-[#1A1F2C]">
+              <span className="text-[#949BA8]">Host RAM Available:</span>
+              <span className="text-[#34D399]">
+                {health?.hardware?.ram_available_gb ? `${health.hardware.ram_available_gb} GB` : '—'} /{' '}
+                {health?.hardware?.ram_total_gb ? `${health.hardware.ram_total_gb} GB` : '16 GB'}
+              </span>
+            </div>
+          </div>
+
+          {/* Remediation instructions if missing */}
+          {!isModelReady && (
+            <div className="p-2.5 rounded-lg bg-[#F59E0B]/10 border border-[#F59E0B]/25 text-[11px] space-y-1.5">
+              <div className="flex items-center gap-1.5 text-[#FBBF24] font-semibold">
+                <AlertCircle className="w-3.5 h-3.5" />
+                <span>Ollama Setup Required</span>
+              </div>
+              <p className="text-[#EDEDEF]/80 text-[10px] leading-relaxed">
+                Run this command in PowerShell to pull and activate the local model:
+              </p>
+              <div className="p-1.5 rounded bg-[#090B10] text-[#FBBF24] font-mono text-[10px] select-all">
+                {llmStatus?.install_command || 'ollama run qwen3.5:4b'}
+              </div>
+            </div>
+          )}
+
+          {/* Footer Controls */}
+          <div className="pt-1 flex items-center justify-between">
+            <span className="text-[10px] text-[#949BA8] font-mono">
+              Auto-polled every 12s
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                refetchLLM();
+              }}
+              isLoading={isRefetchingLLM}
+              className="text-xs h-7"
+            >
+              <RefreshCw className="w-3 h-3" />
+              <span>Refresh Status</span>
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   );
