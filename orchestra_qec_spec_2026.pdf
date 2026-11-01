@@ -1,0 +1,55 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 1393 >>
+stream
+BT
+/F1 12 Tf
+72 720 Td
+18 TL
+(ORCHESTRA AI FAULT-TOLERANT ARCHITECTURE SPECIFICATION 2026) Tj T*
+(Document Reference: ORCH-QEC-SPEC-2026-V3) Tj T*
+(Author: Senior Quantum Systems Architecture Group) Tj T*
+() Tj T*
+(1. SYSTEM OVERVIEW AND FAULT-TOLERANCE THRESHOLDS) Tj T*
+(Topological surface codes enforce fault-tolerant quantum error correction via spatial parity checks.) Tj T*
+(The critical threshold requirement for logical break-even in 2026 hardware is a 2-qubit gate fidelity) Tj T*
+(exceeding 99.27 percent \(corresponding to an error rate below 0.73 percent\).) Tj T*
+() Tj T*
+(2. LATTICE TOPOLOGY AND SYNDROME EXTRACTION) Tj T*
+(Syndrome extraction cycles are pipelined with dedicated ancilla readout resonators.) Tj T*
+(Rotated surface code lattices reduce physical qubit overhead by approximately 40 percent relative to standard planar codes.) Tj T*
+(Stabilizer measurements execute within 200 nanoseconds using high-speed microwave flux-bias pulses.) Tj T*
+() Tj T*
+(3. VERIFIED SAFETY CONSTRAINTS AND DECODING LATENCY) Tj T*
+(Real-time decoding latency must remain strictly below 1 microsecond to prevent syndrome backlog.) Tj T*
+(Minimum code distance d=5 required for memory benchmarks; d=7 required for fault-tolerant magic state distillation.) Tj T*
+(Physical error rates exceeding 1.2 percent trigger automated circuit breaker isolation of malfunctioning qubits.) Tj T*
+ET
+
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000001686 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1756
+%%EOF
