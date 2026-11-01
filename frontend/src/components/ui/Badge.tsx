@@ -14,30 +14,30 @@ export const Badge: React.FC<BadgeProps> = ({
   ...props
 }) => {
   const variants = {
-    // Linear / Raycast-inspired subtle pill styling with fine borders
-    violet: 'bg-[#0E5B59]/15 text-[#0E5B59] dark:text-[#22D3EE] border-[#0E5B59]/30',
-    accent: 'bg-[#0E5B59]/15 text-[#0E5B59] dark:text-[#22D3EE] border-[#0E5B59]/30',
-    cyan: 'bg-[#286D78]/15 text-[#286D78] dark:text-[#388B97] border-[#286D78]/30',
-    emerald: 'bg-[#21845A]/15 text-[#21845A] dark:text-[#34D399] border-[#21845A]/30',
-    success: 'bg-[#21845A]/15 text-[#21845A] dark:text-[#34D399] border-[#21845A]/30',
-    amber: 'bg-[#B7791F]/15 text-[#B7791F] dark:text-[#D69E2E] border-[#B7791F]/30',
-    warning: 'bg-[#B7791F]/15 text-[#B7791F] dark:text-[#D69E2E] border-[#B7791F]/30',
-    rose: 'bg-[#B94A48]/15 text-[#B94A48] dark:text-[#E53E3E] border-[#B94A48]/30',
-    error: 'bg-[#B94A48]/15 text-[#B94A48] dark:text-[#E53E3E] border-[#B94A48]/30',
-    neutral: 'bg-[#151924] text-[#949BA8] border-[#1E2330]',
+    // Theme-aware tokens matching Luxury Teal and Midnight Dark
+    violet: 'bg-[#E6F4F1] dark:bg-[#132B2A] text-[#12615D] dark:text-[#22D3EE] border-[#C8E4DE] dark:border-[#1E4B48]',
+    accent: 'bg-[#E6F4F1] dark:bg-[#132B2A] text-[#12615D] dark:text-[#22D3EE] border-[#C8E4DE] dark:border-[#1E4B48]',
+    cyan: 'bg-[#E6F4F1] dark:bg-[#132B2A] text-[#0B4947] dark:text-[#67C9C5] border-[#C8E4DE] dark:border-[#1E4B48]',
+    emerald: 'bg-[#EAF5EE] dark:bg-[#10241B] text-[#25865E] dark:text-[#34D399] border-[#CCE7DB] dark:border-[#1A3E2F]',
+    success: 'bg-[#EAF5EE] dark:bg-[#10241B] text-[#25865E] dark:text-[#34D399] border-[#CCE7DB] dark:border-[#1A3E2F]',
+    amber: 'bg-[#FDF5E8] dark:bg-[#251E14] text-[#B98232] dark:text-[#D69E2E] border-[#F7E7CD] dark:border-[#382C1C]',
+    warning: 'bg-[#FDF5E8] dark:bg-[#251E14] text-[#B98232] dark:text-[#D69E2E] border-[#F7E7CD] dark:border-[#382C1C]',
+    rose: 'bg-[#FDF0EE] dark:bg-[#2B1413] text-[#B65A56] dark:text-[#F87171] border-[#F7D8D6] dark:border-[#441C1B]',
+    error: 'bg-[#FDF0EE] dark:bg-[#2B1413] text-[#B65A56] dark:text-[#F87171] border-[#F7D8D6] dark:border-[#441C1B]',
+    neutral: 'bg-[#F0F3EF] dark:bg-[#10161D] text-[#667875] dark:text-[#94A3B8] border-[#E2E8E3] dark:border-[#1E293B]',
   };
 
   const dotColors = {
-    violet: 'bg-[#0E5B59]',
-    accent: 'bg-[#0E5B59]',
-    cyan: 'bg-[#06B6D4]',
-    emerald: 'bg-[#10B981]',
-    success: 'bg-[#10B981]',
-    amber: 'bg-[#F59E0B]',
-    warning: 'bg-[#F59E0B]',
-    rose: 'bg-[#F43F5E]',
-    error: 'bg-[#F43F5E]',
-    neutral: 'bg-[#626B7F]',
+    violet: 'bg-[#12615D] dark:bg-[#22D3EE]',
+    accent: 'bg-[#12615D] dark:bg-[#22D3EE]',
+    cyan: 'bg-[#0B4947] dark:bg-[#67C9C5]',
+    emerald: 'bg-[#25865E] dark:bg-[#34D399]',
+    success: 'bg-[#25865E] dark:bg-[#34D399]',
+    amber: 'bg-[#B98232] dark:bg-[#D69E2E]',
+    warning: 'bg-[#B98232] dark:bg-[#D69E2E]',
+    rose: 'bg-[#B65A56] dark:bg-[#F87171]',
+    error: 'bg-[#B65A56] dark:bg-[#F87171]',
+    neutral: 'bg-[#667875] dark:bg-[#626B7F]',
   };
 
   return (

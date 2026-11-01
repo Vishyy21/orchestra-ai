@@ -6,13 +6,26 @@
   color-scheme: dark;
 }
 
+:root[data-theme="light"],
+html.light,
+html.light-theme {
+  color-scheme: light;
+}
+
 body {
-  background-color: #0C1015;
+  background-color: #0B0F14;
   color: #F1F5F9;
   font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+html.light body,
+html.light-theme body,
+:root[data-theme="light"] body {
+  background-color: #F7F6F1;
+  color: #172A29;
 }
 
 /* Custom Refined Scrollbar */
@@ -24,17 +37,17 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #286D78;
+  background: #397F86;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #0E5B59;
+  background: #12615D;
 }
 
 /* Radiant Selection - Teal / Ivory */
 ::selection {
-  background-color: rgba(14, 91, 89, 0.25);
-  color: #0E5B59;
+  background-color: rgba(18, 97, 93, 0.22);
+  color: #0B4947;
 }
 
 .dark ::selection {
@@ -53,7 +66,7 @@ body {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent 5%, rgba(14, 91, 89, 0.4) 30%, rgba(40, 109, 120, 0.4) 70%, transparent 95%);
+  background: linear-gradient(90deg, transparent 5%, rgba(18, 97, 93, 0.4) 30%, rgba(57, 127, 134, 0.4) 70%, transparent 95%);
   pointer-events: none;
 }
 
@@ -67,8 +80,57 @@ body {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, #C5A46D 0%, #286D78 50%, #0E5B59 100%);
+  background: linear-gradient(90deg, #C5A46D 0%, #397F86 50%, #12615D 100%);
   pointer-events: none;
+}
+
+/* Cinematic Agent Flow Animations */
+@keyframes energyBeamFlow {
+  0% {
+    stroke-dashoffset: 60;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pedestalPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(103, 201, 197, 0.35), 0 0 0 2px rgba(18, 97, 93, 0.4);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 0 35px rgba(103, 201, 197, 0.6), 0 0 0 4px rgba(103, 201, 197, 0.6);
+  }
+}
+
+@keyframes conduitWave {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-15px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-energy-beam {
+  stroke-dasharray: 8 6;
+  animation: energyBeamFlow 2.4s linear infinite;
+}
+
+.animate-pedestal-active {
+  animation: pedestalPulse 2.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-energy-beam,
+  .animate-pedestal-active {
+    animation: none !important;
+  }
 }
 
 /* Glass and Surface Tokens */

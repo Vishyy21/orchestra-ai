@@ -10,7 +10,6 @@ import {
   BarChart3,
   ShieldCheck,
   CheckCircle2,
-  Hourglass,
   Lock,
   ArrowLeft,
   Cpu,
@@ -29,8 +28,7 @@ import {
 import { timeAgo, formatDate } from '../lib/utils';
 import { cn } from '../lib/utils';
 
-export const HITL_REJECTION_PREFIX =
-  'ACTION REJECTED: Task rejected by Human-in-the-Loop governance';
+export const HITL_REJECTION_PREFIX = 'ACTION REJECTED: Task rejected by Human-in-the-Loop governance';
 
 export type DerivedAgentStatus =
   | 'completed'
@@ -165,15 +163,18 @@ export function groupRunsIntoAttempts(
 
 export function parseEvidenceFromRuns(runs?: AgentRunBrief[] | null): ParsedEvidence[] {
   if (!runs || runs.length === 0) return [];
-  const researchRun = runs.find((r) => r.agent_name.toLowerCase().includes('research'));
+  const researchRun = runs.find(
+    (r) =>
+      r.agent_name.toLowerCase().includes('research') &&
+      r.status === 'completed' &&
+      r.output_data
+  );
+
   if (!researchRun || !researchRun.output_data) return [];
 
   const text = researchRun.output_data;
   const items: ParsedEvidence[] = [];
 
-  // Parse ChromaDB document lines
-  // Example: - **filename** (Doc ID: `id`, Page X, Chunk #Y)
-  //          Excerpt: "..."
   const docRegex = /-\s*\*\*(.*?)\*\*\s*\((?:Doc ID:\s*`?([^,`]+)`?,\s*)?Page\s*(\d+),\s*Chunk\s*#(\d+)\)\s*(?:\n|\r\n)\s*Excerpt:\s*["']?([\s\S]*?)(?:["']?(?=\n-|\n#|$))/g;
   let match;
   while ((match = docRegex.exec(text)) !== null) {
@@ -189,8 +190,6 @@ export function parseEvidenceFromRuns(runs?: AgentRunBrief[] | null): ParsedEvid
     });
   }
 
-  // Parse accepted web citations
-  // Example: - [title](url)\n  Snippet: ...
   const webRegex = /-\s*\[(.*?)\]\((https?:\/\/[^\s)]+)\)\s*(?:\n|\r\n)\s*Snippet:\s*([\s\S]*?)(?=\n-|\n#|$)/g;
   while ((match = webRegex.exec(text)) !== null) {
     items.push({
@@ -203,13 +202,11 @@ export function parseEvidenceFromRuns(runs?: AgentRunBrief[] | null): ParsedEvid
     });
   }
 
-  // Parse excluded web sources if present
   const excludedSectionIdx = text.indexOf('### Excluded Web Sources');
   if (excludedSectionIdx !== -1) {
     const excludedText = text.substring(excludedSectionIdx);
     const exclRegex = /-\s*\[(.*?)\]\((https?:\/\/[^\s)]+)\)/g;
     while ((match = exclRegex.exec(excludedText)) !== null) {
-      // Check if not already added
       const exists = items.some((it) => it.url === match![2].trim());
       if (!exists) {
         items.push({
@@ -341,12 +338,10 @@ export const AgentWorkspacePage: React.FC = () => {
     refetchInterval: 3000,
   });
 
-  // Calculate attempts
   const attempts = React.useMemo(() => {
     return groupRunsIntoAttempts(task?.agent_runs, task?.status || 'pending');
   }, [task?.agent_runs, task?.status]);
 
-  // Selected attempt: default to latest, or user-selected
   const activeAttempt = React.useMemo(() => {
     if (attempts.length === 0) return null;
     if (selectedAttemptNumber !== null) {
@@ -362,152 +357,199 @@ export const AgentWorkspacePage: React.FC = () => {
 
   const selectedState = executionStates.find((s) => s.meta.id === selectedAgentId) || executionStates[2];
 
-  // Parse evidence from current attempt's runs or all task runs
   const parsedEvidence = React.useMemo(() => {
     const runsToUse = activeAttempt?.runs || task?.agent_runs || [];
     return parseEvidenceFromRuns(runsToUse);
   }, [activeAttempt, task?.agent_runs]);
 
   const taskTitle = task?.title || 'Semiconductor Cleanroom Contamination & HBM Yield Analysis';
+  const activeAgentState = executionStates.find((s) => s.status === 'running');
 
   return (
     <div
       className={cn(
         'p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-6 font-sans transition-colors duration-200',
-        isLight ? 'text-[#111827]' : 'text-[#F1F5F9]'
+        isLight ? 'text-[#172A29]' : 'text-[#F1F5F9]'
       )}
     >
       {/* 1. Top Header Bar: Back Button + Title + Status Pill */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/dashboard')}
             className={cn(
-              'flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-xl border transition-colors',
+              'px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition-all shadow-xs',
               isLight
-                ? 'bg-white border-[#EAEAE7] text-[#4B5563] hover:text-[#111827] shadow-xs'
-                : 'bg-[#121626] border-[#1E2538] text-gray-400 hover:text-white'
+                ? 'bg-white border-[#E2E8E3] text-[#667875] hover:text-[#172A29] hover:bg-[#F0F3EF]'
+                : 'bg-[#10161D] border-[#1E293B] text-gray-400 hover:text-white hover:bg-[#19222C]'
             )}
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back to Tasks</span>
           </button>
 
-          <div
-            className={cn(
-              'w-9 h-9 rounded-xl flex items-center justify-center p-2 shadow-xs transition-all',
-              isLight
-                ? 'bg-[#E6F4F1] text-[#0E5B59] border border-[#C8E4DE]'
-                : 'bg-[#132B2A] text-[#22D3EE] border border-[#1E4B48] shadow-[0_0_12px_rgba(14,91,89,0.3)]'
-            )}
-          >
-            <Sparkles className="w-5 h-5" />
+          <div className="w-8 h-8 rounded-xl bg-[#E6F4F1] dark:bg-[#132B2A] border border-[#C8E4DE] dark:border-[#1E4B48] flex items-center justify-center text-[#12615D] dark:text-[#67C9C5] shadow-xs">
+            <Sparkles className="w-4 h-4" />
           </div>
 
           <div>
-            <h1
-              className={cn(
-                'text-base sm:text-lg font-bold tracking-tight leading-tight',
-                isLight ? 'text-[#172321]' : 'text-white'
-              )}
-            >
+            <h1 className={cn('text-lg font-bold tracking-tight', isLight ? 'text-[#172A29]' : 'text-white')}>
               {taskTitle}
             </h1>
-            <div className={cn('text-[11px] flex items-center gap-2 mt-0.5', isLight ? 'text-[#68736F]' : 'text-gray-400')}>
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 font-mono">
               <span>Task ID: {effectiveTaskId}</span>
               <span>&bull;</span>
-              <span>Started 2 min ago</span>
-              {attempts.length > 0 && (
-                <span className="text-[#0E5B59] dark:text-[#22D3EE] ml-2 font-mono text-[10px] font-semibold">
-                  Attempt {activeAttempt?.attemptNumber || attempts.length} of {attempts.length} (Latest)
-                </span>
-              )}
+              <span>Started {task?.created_at ? timeAgo(task.created_at) : '2 min ago'}</span>
+              <span className="text-[#12615D] dark:text-[#67C9C5] font-semibold">
+                Attempt {activeAttempt?.attemptNumber || attempts.length} of {attempts.length} (Latest)
+              </span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 self-start sm:self-auto">
           {task?.status === 'completed' ? (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EAF5EE] dark:bg-[#10241B] border border-[#D1EAD8] dark:border-[#1A3E2F] text-[#21845A] dark:text-[#34D399] text-xs font-semibold">
-              <span className="w-2 h-2 rounded-full bg-[#21845A]" />
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EAF5EE] dark:bg-[#10241B] border border-[#CCE7DB] dark:border-[#1A3E2F] text-[#25865E] dark:text-[#34D399] text-xs font-semibold">
+              <span className="w-2 h-2 rounded-full bg-[#25865E]" />
               <span>Completed</span>
             </div>
           ) : task?.status === 'failed' ? (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-400 text-xs font-semibold">
-              <span className="w-2 h-2 rounded-full bg-rose-500" />
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FDF0EE] dark:bg-[#2B1413] border border-[#F7D8D6] dark:border-[#441C1B] text-[#B65A56] dark:text-[#F87171] text-xs font-semibold">
+              <span className="w-2 h-2 rounded-full bg-[#B65A56]" />
               <span>Failed / Rejected</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F4F1] dark:bg-[#132B2A] border border-[#C8E4DE] dark:border-[#1E4B48] text-[#0E5B59] dark:text-[#22D3EE] text-xs font-semibold shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-[#0E5B59] dark:bg-[#22D3EE] animate-pulse" />
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F4F1] dark:bg-[#132B2A] border border-[#C8E4DE] dark:border-[#1E4B48] text-[#12615D] dark:text-[#67C9C5] text-xs font-semibold shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-[#12615D] dark:bg-[#67C9C5] animate-pulse" />
               <span>In Progress</span>
             </div>
           )}
         </div>
       </div>
 
-      {/* 2. Executing Sub-Banner */}
+      {/* 2. Pipeline Execution Sub-Banner */}
       <div
         className={cn(
           'rounded-full py-2 px-6 flex items-center justify-center gap-3 max-w-lg mx-auto border shadow-xs transition-all',
           isLight
-            ? 'bg-white border-[#E4E7E0]'
-            : 'bg-[#131920] border-[#1F2A37]'
+            ? 'bg-white border-[#E2E8E3]'
+            : 'bg-[#10161D] border-[#1E293B]'
         )}
       >
-        <Cpu className="w-4 h-4 text-[#0E5B59] dark:text-[#22D3EE] animate-spin-slow" />
-        <div className="text-xs text-center flex items-center gap-2">
-          <span className={cn('font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
-            Executing: Analyst
-          </span>
-          <span className="text-gray-400 hidden sm:inline">&bull;</span>
-          <span className={cn('text-[11px] hidden sm:inline', isLight ? 'text-[#68736F]' : 'text-gray-400')}>
-            Analyzing research findings and extracting insights...
-          </span>
-        </div>
+        {task?.status === 'completed' ? (
+          <>
+            <CheckCircle2 className="w-4 h-4 text-[#25865E] dark:text-[#34D399]" />
+            <div className="text-xs text-center flex items-center gap-2">
+              <span className={cn('font-bold', isLight ? 'text-[#172A29]' : 'text-white')}>
+                Pipeline Completed
+              </span>
+              <span className="text-gray-400 hidden sm:inline">&bull;</span>
+              <span className={cn('text-[11px] hidden sm:inline', isLight ? 'text-[#667875]' : 'text-gray-400')}>
+                All 5 specialized agents executed and verified
+              </span>
+            </div>
+          </>
+        ) : task?.status === 'failed' ? (
+          <>
+            <ShieldAlert className="w-4 h-4 text-[#B65A56] dark:text-[#F87171]" />
+            <div className="text-xs text-center flex items-center gap-2">
+              <span className={cn('font-bold', isLight ? 'text-[#172A29]' : 'text-white')}>
+                Execution Halted
+              </span>
+              <span className="text-gray-400 hidden sm:inline">&bull;</span>
+              <span className={cn('text-[11px] hidden sm:inline', isLight ? 'text-[#667875]' : 'text-gray-400')}>
+                Workflow stopped before verifier completion
+              </span>
+            </div>
+          </>
+        ) : (
+          <>
+            <Cpu className="w-4 h-4 text-[#12615D] dark:text-[#67C9C5] animate-spin-slow" />
+            <div className="text-xs text-center flex items-center gap-2">
+              <span className={cn('font-bold', isLight ? 'text-[#172A29]' : 'text-white')}>
+                {activeAgentState?.status === 'running'
+                  ? `Executing: ${activeAgentState.meta.name}`
+                  : 'Executing: Analyst'}
+              </span>
+              <span className="text-gray-400 hidden sm:inline">&bull;</span>
+              <span className={cn('text-[11px] hidden sm:inline', isLight ? 'text-[#667875]' : 'text-gray-400')}>
+                {activeAgentState?.status === 'running'
+                  ? activeAgentState.meta.role
+                  : 'Analyzing research findings and extracting insights...'}
+              </span>
+            </div>
+          </>
+        )}
       </div>
 
-      {/* 3. Five-Agent Horizontal Pipeline Conduit (Signature Visual) */}
+      {/* 3. Five-Agent Horizontal Pipeline Conduit (Cinematic 3D Pedestal Workflow) */}
       <div
         className={cn(
-          'relative rounded-2xl border p-6 lg:p-8 overflow-hidden transition-all',
+          'relative rounded-2xl border p-6 lg:p-10 overflow-hidden transition-all',
           isLight
-            ? 'bg-[#FFFFFF] border-[#E4E7E0] shadow-xs'
-            : 'bg-[#131920] border-[#1F2A37] shadow-xl'
+            ? 'bg-[#FFFFFF] border-[#E2E8E3] shadow-xs'
+            : 'bg-[#10161D] border-[#1E293B] shadow-xl'
         )}
       >
-        {/* Smooth SVG Connecting Flow Conduit spanning the 5 nodes */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-12">
+        {/* Cinematic SVG Connecting Flow Conduit spanning the 5 nodes */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-6 sm:px-12">
           <svg
-            viewBox="0 0 1000 60"
+            viewBox="0 0 1000 120"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className="w-full h-12"
+            className="w-full h-28"
             preserveAspectRatio="none"
           >
             <defs>
-              <linearGradient id="pipelineTealGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#0E5B59" stopOpacity="0.8" />
-                <stop offset="35%" stopColor="#286D78" stopOpacity="0.9" />
-                <stop offset="70%" stopColor="#14B8A6" stopOpacity="0.8" />
-                <stop offset="100%" stopColor="#C5A46D" stopOpacity="0.6" />
+              <linearGradient id="waveRibbonGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#25865E" stopOpacity={isLight ? 0.18 : 0.25} />
+                <stop offset="25%" stopColor="#12615D" stopOpacity={isLight ? 0.35 : 0.45} />
+                <stop offset="50%" stopColor="#67C9C5" stopOpacity={isLight ? 0.5 : 0.6} />
+                <stop offset="75%" stopColor="#C5A46D" stopOpacity={isLight ? 0.35 : 0.45} />
+                <stop offset="100%" stopColor="#12615D" stopOpacity={isLight ? 0.2 : 0.3} />
               </linearGradient>
+              <linearGradient id="energyBeamGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#25865E" />
+                <stop offset="28%" stopColor="#12615D" />
+                <stop offset="50%" stopColor="#67C9C5" />
+                <stop offset="78%" stopColor="#C5A46D" />
+                <stop offset="100%" stopColor="#12615D" />
+              </linearGradient>
+              <filter id="cinematicGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3.5" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
             </defs>
-            {/* Background Conduit Track */}
+
+            {/* Ambient wide ribbon wave in background */}
             <path
-              d="M 50 30 L 950 30"
-              stroke={isLight ? '#E4E7E0' : '#1F2A37'}
-              strokeWidth="3"
+              d="M 20 60 C 150 15, 230 105, 360 55 C 490 5, 570 105, 700 55 C 810 15, 890 90, 980 60"
+              stroke="url(#waveRibbonGrad)"
+              strokeWidth="24"
               strokeLinecap="round"
+              opacity={isLight ? 0.45 : 0.35}
             />
-            {/* Active Glowing Flow Line with Reduced-Motion Support */}
+
+            {/* Flowing animated energy beam path */}
             <path
-              d="M 50 30 L 950 30"
-              stroke="url(#pipelineTealGradient)"
-              strokeWidth="2.5"
-              strokeDasharray="8 8"
-              className="motion-safe:animate-[pulse_3s_ease-in-out_infinite]"
-              opacity="0.8"
+              d="M 40 60 C 160 25, 230 95, 360 60 C 490 25, 570 95, 700 60 C 810 25, 880 85, 960 60"
+              stroke="url(#energyBeamGrad)"
+              strokeWidth="3.5"
+              strokeLinecap="round"
+              filter="url(#cinematicGlow)"
+              className="animate-energy-beam"
+            />
+
+            {/* Harmonic dotted secondary strand */}
+            <path
+              d="M 40 60 C 160 95, 240 25, 370 60 C 500 95, 580 25, 710 60 C 820 95, 890 35, 960 60"
+              stroke="url(#waveRibbonGrad)"
+              strokeWidth="1.5"
+              strokeDasharray="4 4"
+              opacity={0.6}
             />
           </svg>
         </div>
@@ -529,47 +571,116 @@ export const AgentWorkspacePage: React.FC = () => {
                 onClick={() => setSelectedAgentId(agent.id)}
                 className="flex flex-col items-center cursor-pointer group"
               >
-                {/* Node Box or Circle */}
-                {isRunning ? (
-                  /* Active Signature Glowing Halo Circle */
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-[#0E5B59] to-[#286D78] ring-4 ring-[#0E5B59]/30 shadow-[0_0_25px_rgba(14,91,89,0.4)] flex items-center justify-center text-white transition-all transform scale-105 motion-safe:animate-pulse">
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                ) : (
-                  /* Standard Node Box */
+                {/* 3D Elevated Pedestal Container */}
+                <div className="relative flex flex-col items-center justify-center">
+                  {/* Subtle 3D Pedestal Base Shadow */}
                   <div
                     className={cn(
-                      'w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center transition-all border',
-                      isSelected
+                      'w-16 sm:w-20 h-4 rounded-full absolute -bottom-1 z-0 transition-all pointer-events-none',
+                      isRunning
                         ? isLight
-                          ? 'bg-[#E6F4F1] border-[#0E5B59] text-[#0E5B59] shadow-xs'
-                          : 'bg-[#132B2A] border-[#14918E] shadow-[0_0_15px_rgba(14,91,89,0.3)] text-[#22D3EE]'
+                          ? 'bg-gradient-to-r from-[#67C9C5]/40 via-[#12615D]/50 to-[#67C9C5]/40 blur-[3px]'
+                          : 'bg-gradient-to-r from-[#12615D]/60 via-[#67C9C5]/80 to-[#12615D]/60 blur-[4px]'
                         : isCompleted
                         ? isLight
-                          ? 'bg-[#EAF5EE] border-[#D1EAD8] text-[#21845A]'
-                          : 'bg-[#10241B] border-[#1A3E2F] text-[#34D399]'
-                        : isRejected
-                        ? isLight
-                          ? 'bg-rose-50 border-rose-200 text-rose-700'
-                          : 'bg-[#281216] border-rose-500/40 text-rose-400'
+                          ? 'bg-[#25865E]/20 blur-[2px]'
+                          : 'bg-[#25865E]/30 blur-[3px]'
                         : isLight
-                        ? 'bg-gray-50 border-[#E4E7E0] text-gray-500'
-                        : 'bg-[#131920] border-[#1F2A37] text-gray-400'
+                        ? 'bg-black/5 blur-[2px]'
+                        : 'bg-black/40 blur-[3px]'
                     )}
-                  >
-                    <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
-                  </div>
-                )}
+                  />
+
+                  {isRunning ? (
+                    /* Active Signature Cinematic Concentric Halo Node */
+                    <div className="relative z-10 flex items-center justify-center">
+                      {/* Concentric Pulsing Ripple */}
+                      <div className="absolute w-20 h-20 rounded-full border border-[#67C9C5]/50 motion-safe:animate-ping opacity-30 pointer-events-none" />
+                      {/* Concentric Radiant Halo */}
+                      <div className="absolute w-18 h-18 rounded-full bg-gradient-to-tr from-[#12615D]/40 via-[#67C9C5]/50 to-[#C5A46D]/30 blur-sm motion-safe:animate-pulse pointer-events-none" />
+                      {/* Stepped Pedestal Ring */}
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full p-1 bg-gradient-to-b from-[#67C9C5] to-[#12615D] shadow-[0_0_24px_rgba(103,201,197,0.5)] flex items-center justify-center transform transition-transform hover:scale-105">
+                        {/* Core Circle */}
+                        <div className="w-full h-full rounded-full bg-gradient-to-br from-[#0B4947] via-[#12615D] to-[#397F86] flex items-center justify-center text-white border-2 border-white/60">
+                          <Icon className="w-6 h-6 text-white drop-shadow-md" />
+                        </div>
+                      </div>
+                    </div>
+                  ) : isCompleted ? (
+                    /* Completed Muted Emerald Pedestal Node */
+                    <div className="relative z-10 flex items-center justify-center">
+                      <div
+                        className={cn(
+                          'w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all border-2 shadow-md transform hover:scale-105',
+                          isSelected
+                            ? 'ring-4 ring-[#12615D]/30'
+                            : '',
+                          isLight
+                            ? 'bg-[#25865E] border-white text-white shadow-[0_4px_12px_rgba(37,134,94,0.35)]'
+                            : 'bg-[#1D6A4B] border-[#1E293B] text-white shadow-[0_4px_14px_rgba(33,132,90,0.5)]'
+                        )}
+                      >
+                        <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                      </div>
+                    </div>
+                  ) : isRejected ? (
+                    /* HITL Rejection Pedestal Node */
+                    <div className="relative z-10 flex items-center justify-center">
+                      <div
+                        className={cn(
+                          'w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all border-2 shadow-sm',
+                          isLight
+                            ? 'bg-[#FDF0EE] border-[#F7D8D6] text-[#B65A56]'
+                            : 'bg-[#2B1413] border-[#441C1B] text-[#F87171]'
+                        )}
+                      >
+                        <ShieldAlert className="w-5 h-5 sm:w-6 sm:h-6" />
+                      </div>
+                    </div>
+                  ) : isReporterLocked ? (
+                    /* Reporter Not Executed Pedestal Node */
+                    <div className="relative z-10 flex items-center justify-center">
+                      <div
+                        className={cn(
+                          'w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all border-2 shadow-xs',
+                          isLight
+                            ? 'bg-[#F0F3EF] border-[#E2E8E3] text-[#667875]'
+                            : 'bg-[#10161D] border-[#1E293B] text-gray-500'
+                        )}
+                      >
+                        <Lock className="w-5 h-5 text-gray-400" />
+                      </div>
+                    </div>
+                  ) : (
+                    /* Neutral Elevated Pending Pedestal Node */
+                    <div className="relative z-10 flex items-center justify-center">
+                      <div
+                        className={cn(
+                          'w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all border-2 shadow-xs transform hover:scale-105',
+                          isSelected
+                            ? isLight
+                              ? 'border-[#12615D] ring-2 ring-[#12615D]/20 bg-[#E6F4F1] text-[#12615D]'
+                              : 'border-[#67C9C5] ring-2 ring-[#67C9C5]/30 bg-[#132B2A] text-[#67C9C5]'
+                            : isLight
+                            ? 'bg-white border-[#E2E8E3] text-[#667875]'
+                            : 'bg-[#10161D] border-[#1E293B] text-gray-400'
+                        )}
+                      >
+                        <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* Agent Name Heading (Accessible for Vitest assertions) */}
                 <h3
                   role="heading"
                   className={cn(
-                    'mt-2.5 text-xs font-bold tracking-tight transition-colors',
+                    'mt-3 text-xs font-bold tracking-tight transition-colors',
                     isRunning
-                      ? 'text-[#0E5B59] dark:text-[#22D3EE]'
+                      ? 'text-[#12615D] dark:text-[#67C9C5]'
                       : isLight
-                      ? 'text-[#172321] group-hover:text-[#0E5B59]'
+                      ? 'text-[#172A29] group-hover:text-[#12615D]'
                       : 'text-gray-200 group-hover:text-white'
                   )}
                 >
@@ -579,29 +690,29 @@ export const AgentWorkspacePage: React.FC = () => {
                 {/* Status Indicator Icon & Test Badge under Node */}
                 <div className="mt-1 flex flex-col items-center gap-0.5">
                   {isCompleted ? (
-                    <div className="flex items-center gap-1 text-[10px] text-[#21845A] dark:text-[#34D399]">
+                    <div className="flex items-center gap-1 text-[10px] text-[#25865E] dark:text-[#34D399] font-bold">
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span className="font-mono font-bold">DONE</span>
+                      <span className="font-mono">DONE</span>
                     </div>
                   ) : isRunning ? (
-                    <div className="flex items-center gap-1 text-[10px] text-[#0E5B59] dark:text-[#22D3EE]">
-                      <span className="w-2 h-2 rounded-full bg-[#0E5B59] dark:bg-[#22D3EE] animate-pulse" />
-                      <span className="font-mono font-bold">RUNNING</span>
+                    <div className="flex items-center gap-1 text-[10px] text-[#12615D] dark:text-[#67C9C5] font-bold">
+                      <span className="w-2 h-2 rounded-full bg-[#12615D] dark:bg-[#67C9C5] animate-ping" />
+                      <span className="font-mono">EXECUTING</span>
                     </div>
                   ) : isRejected ? (
-                    <div className="flex items-center gap-1 text-[10px] text-rose-600 dark:text-rose-400">
+                    <div className="flex items-center gap-1 text-[10px] text-[#B65A56] dark:text-[#F87171] font-bold">
                       <ShieldAlert className="w-3.5 h-3.5" />
-                      <span className="font-mono font-bold">REJECTED AT GATE</span>
+                      <span className="font-mono">REJECTED AT GATE</span>
                     </div>
                   ) : isReporterLocked ? (
-                    <div className="flex items-center gap-1 text-[10px] text-gray-400">
+                    <div className="flex items-center gap-1 text-[10px] text-gray-400 font-medium">
                       <Lock className="w-3 h-3" />
                       <span className="font-mono">NOT EXECUTED</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1 text-[10px] text-[#B7791F] dark:text-[#D69E2E]">
-                      <Hourglass className="w-3 h-3" />
-                      <span className="font-mono">WAITING</span>
+                    <div className="flex items-center gap-1 text-[10px] text-[#667875] dark:text-gray-400 font-medium">
+                      <span className="w-2 h-2 rounded-full border border-current" />
+                      <span className="font-mono">PENDING</span>
                     </div>
                   )}
                 </div>
@@ -618,11 +729,11 @@ export const AgentWorkspacePage: React.FC = () => {
           className={cn(
             'lg:col-span-4 rounded-2xl border p-5 space-y-3 shadow-xs transition-all',
             isLight
-              ? 'bg-[#FFFFFF] border-[#EAEAE7]'
-              : 'bg-[#121626] border-[#1E2538]'
+              ? 'bg-[#FFFFFF] border-[#E2E8E3]'
+              : 'bg-[#10161D] border-[#1E293B]'
           )}
         >
-          <h3 className={cn('text-xs font-bold uppercase tracking-wider mb-2', isLight ? 'text-[#6B7280]' : 'text-gray-400')}>
+          <h3 className={cn('text-xs font-bold uppercase tracking-wider mb-2', isLight ? 'text-[#667875]' : 'text-gray-400')}>
             Execution Steps
           </h3>
 
@@ -651,27 +762,27 @@ export const AgentWorkspacePage: React.FC = () => {
                     'p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between',
                     isSelected
                       ? isLight
-                        ? 'bg-[#E6F4F1] border-[#C8E4DE] text-[#0E5B59] shadow-xs'
+                        ? 'bg-[#E6F4F1] border-[#C8E4DE] text-[#12615D] shadow-xs'
                         : 'bg-[#132B2A] border-[#1E4B48] text-white shadow-sm'
                       : isLight
-                      ? 'bg-[#F9FAFB] border-[#E5E7EB] text-[#374151] hover:bg-gray-50'
-                      : 'bg-[#0E1220] border-[#1E2538] text-gray-300 hover:bg-[#121626]'
+                      ? 'bg-[#F0F3EF]/60 border-[#E2E8E3] text-[#172A29] hover:bg-[#F0F3EF]'
+                      : 'bg-[#10161D] border-[#1E293B] text-gray-300 hover:bg-[#19222C]'
                   )}
                 >
                   <div className="flex items-center gap-3">
                     {isCompleted ? (
-                      <CheckCircle2 className="w-4 h-4 text-[#21845A] dark:text-[#34D399] shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-[#25865E] dark:text-[#34D399] shrink-0" />
                     ) : isRunning ? (
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#0E5B59] dark:bg-[#22D3EE] animate-pulse shrink-0" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#12615D] dark:bg-[#67C9C5] animate-pulse shrink-0" />
                     ) : (
                       <span className="w-2.5 h-2.5 rounded-full bg-gray-300 dark:bg-gray-600 shrink-0" />
                     )}
 
                     <div>
-                      <div className={cn('text-xs font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
+                      <div className={cn('text-xs font-bold', isLight ? 'text-[#172A29]' : 'text-white')}>
                         {agent.name}
                       </div>
-                      <div className={cn('text-[10px]', isLight ? 'text-[#68736F]' : 'text-gray-400')}>
+                      <div className={cn('text-[10px]', isLight ? 'text-[#667875]' : 'text-gray-400')}>
                         {isCompleted
                           ? `Completed • ${duration}`
                           : isRunning
@@ -681,7 +792,12 @@ export const AgentWorkspacePage: React.FC = () => {
                     </div>
                   </div>
 
-                  {isRunning && <ChevronRight className="w-4 h-4 text-[#0E5B59] dark:text-[#22D3EE]" />}
+                  <ChevronRight
+                    className={cn(
+                      'w-4 h-4 transition-transform',
+                      isSelected ? 'text-[#12615D] dark:text-[#67C9C5] translate-x-0.5' : 'text-gray-300 dark:text-gray-600'
+                    )}
+                  />
                 </div>
               );
             })}
@@ -691,88 +807,90 @@ export const AgentWorkspacePage: React.FC = () => {
         {/* Right Column: Tabbed Inspector (8 of 12 columns) */}
         <div
           className={cn(
-            'lg:col-span-8 rounded-2xl border p-5 sm:p-6 space-y-4 shadow-xs relative overflow-hidden flex flex-col justify-between transition-all min-h-[460px]',
+            'lg:col-span-8 rounded-2xl border p-5 space-y-4 shadow-xs relative overflow-hidden transition-all',
             isLight
-              ? 'bg-[#FFFFFF] border-[#E4E7E0]'
-              : 'bg-[#131920] border-[#1F2A37]'
+              ? 'bg-[#FFFFFF] border-[#E2E8E3]'
+              : 'bg-[#10161D] border-[#1E293B]'
           )}
         >
-          {/* Top Pill Tabs */}
-          <div className="flex items-center gap-2 border-b border-gray-100 dark:border-[#1F2A37] pb-3">
-            <button
-              onClick={() => setInspectorTab('output')}
-              className={cn(
-                'px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5',
-                inspectorTab === 'output'
-                  ? 'bg-[#0E5B59] text-white shadow-xs'
-                  : isLight
-                  ? 'bg-white text-[#68736F] hover:text-[#172321] border border-[#E4E7E0]'
-                  : 'bg-[#18202A] text-gray-400 hover:text-white border border-[#1F2A37]'
-              )}
-            >
-              <BarChart3 className="w-3.5 h-3.5" />
-              <span>Agent Output</span>
-            </button>
+          {/* Functional Tabs Header */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 dark:border-[#1E293B] pb-3">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <button
+                onClick={() => setInspectorTab('output')}
+                className={cn(
+                  'px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all',
+                  inspectorTab === 'output'
+                    ? 'bg-[#12615D] text-white shadow-xs'
+                    : isLight
+                    ? 'bg-transparent text-[#667875] hover:text-[#172A29] hover:bg-[#F0F3EF]'
+                    : 'bg-transparent text-gray-400 hover:text-white hover:bg-[#19222C]'
+                )}
+              >
+                <BarChart3 className="w-3.5 h-3.5" />
+                <span>Agent Output</span>
+              </button>
 
-            <button
-              onClick={() => setInspectorTab('evidence')}
-              className={cn(
-                'px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5',
-                inspectorTab === 'evidence'
-                  ? 'bg-[#0E5B59] text-white shadow-xs'
-                  : isLight
-                  ? 'bg-white text-[#68736F] hover:text-[#172321] border border-[#E4E7E0]'
-                  : 'bg-[#18202A] text-gray-400 hover:text-white border border-[#1F2A37]'
-              )}
-            >
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>Evidence ({parsedEvidence.length})</span>
-            </button>
+              <button
+                onClick={() => setInspectorTab('evidence')}
+                className={cn(
+                  'px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all',
+                  inspectorTab === 'evidence'
+                    ? 'bg-[#12615D] text-white shadow-xs'
+                    : isLight
+                    ? 'bg-transparent text-[#667875] hover:text-[#172A29] hover:bg-[#F0F3EF]'
+                    : 'bg-transparent text-gray-400 hover:text-white hover:bg-[#19222C]'
+                )}
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Evidence ({parsedEvidence.length})</span>
+              </button>
 
-            <button
-              onClick={() => setInspectorTab('logs')}
-              className={cn(
-                'px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5',
-                inspectorTab === 'logs'
-                  ? 'bg-[#0E5B59] text-white shadow-xs'
-                  : isLight
-                  ? 'bg-white text-[#68736F] hover:text-[#172321] border border-[#E4E7E0]'
-                  : 'bg-[#18202A] text-gray-400 hover:text-white border border-[#1F2A37]'
-              )}
-            >
-              <Terminal className="w-3.5 h-3.5" />
-              <span>Logs ({task?.agent_runs?.length || 0})</span>
-            </button>
+              <button
+                onClick={() => setInspectorTab('logs')}
+                className={cn(
+                  'px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all',
+                  inspectorTab === 'logs'
+                    ? 'bg-[#12615D] text-white shadow-xs'
+                    : isLight
+                    ? 'bg-transparent text-[#667875] hover:text-[#172A29] hover:bg-[#F0F3EF]'
+                    : 'bg-transparent text-gray-400 hover:text-white hover:bg-[#19222C]'
+                )}
+              >
+                <Terminal className="w-3.5 h-3.5" />
+                <span>Logs ({task?.agent_runs?.length || 0})</span>
+              </button>
 
-            <button
-              onClick={() => setInspectorTab('attempts')}
-              className={cn(
-                'px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5',
-                inspectorTab === 'attempts'
-                  ? 'bg-[#0E5B59] text-white shadow-xs'
-                  : isLight
-                  ? 'bg-white text-[#68736F] hover:text-[#172321] border border-[#E4E7E0]'
-                  : 'bg-[#18202A] text-gray-400 hover:text-white border border-[#1F2A37]'
-              )}
-            >
-              <History className="w-3.5 h-3.5" />
-              <span>Attempts ({attempts.length || 1})</span>
-            </button>
+              <button
+                onClick={() => setInspectorTab('attempts')}
+                className={cn(
+                  'px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all',
+                  inspectorTab === 'attempts'
+                    ? 'bg-[#12615D] text-white shadow-xs'
+                    : isLight
+                    ? 'bg-transparent text-[#667875] hover:text-[#172A29] hover:bg-[#F0F3EF]'
+                    : 'bg-transparent text-gray-400 hover:text-white hover:bg-[#19222C]'
+                )}
+              >
+                <History className="w-3.5 h-3.5" />
+                <span>Attempts ({attempts.length})</span>
+              </button>
+            </div>
           </div>
 
-          {/* Tab 1: Agent Output */}
+          {/* Tab 1: Agent Output View */}
           {inspectorTab === 'output' && (
-            <div className="space-y-4 flex-1">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-[#0E5B59] dark:text-[#22D3EE]" />
-                  <h4 className={cn('text-sm font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
+                  <selectedState.meta.icon className="w-4 h-4 text-[#12615D] dark:text-[#67C9C5]" />
+                  <h4 className={cn('text-xs font-bold uppercase tracking-wider', isLight ? 'text-[#172A29]' : 'text-white')}>
                     {selectedState.meta.name} Output (Live)
                   </h4>
                 </div>
 
                 {selectedState.status === 'running' || selectedState.meta.id === 'analyst' ? (
-                  <span className="text-xs text-[#0E5B59] dark:text-[#22D3EE] font-mono flex items-center gap-1.5 animate-pulse">
+                  <span className="text-xs text-[#12615D] dark:text-[#67C9C5] font-mono flex items-center gap-1.5 animate-pulse">
                     <RefreshCw className="w-3 h-3 animate-spin" />
                     Generating...
                   </span>
@@ -781,8 +899,8 @@ export const AgentWorkspacePage: React.FC = () => {
 
               {/* Special Rejection State Display (Required by Vitest) */}
               {selectedState.status === 'rejected_at_gate' && (
-                <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-700 dark:text-rose-300 space-y-2">
-                  <div className="font-bold text-xs uppercase tracking-wider flex items-center gap-2 text-rose-600 dark:text-rose-400">
+                <div className="p-4 rounded-xl bg-[#FDF0EE] dark:bg-[#2B1413] border border-[#F7D8D6] dark:border-[#441C1B] text-[#B65A56] dark:text-[#F87171] space-y-2">
+                  <div className="font-bold text-xs uppercase tracking-wider flex items-center gap-2 text-[#B65A56] dark:text-[#F87171]">
                     <Gavel className="w-4 h-4" />
                     HUMAN-IN-THE-LOOP GOVERNANCE REJECTION
                   </div>
@@ -800,10 +918,10 @@ export const AgentWorkspacePage: React.FC = () => {
                 <div
                   className={cn(
                     'p-4 rounded-xl border text-xs space-y-2',
-                    isLight ? 'bg-gray-50 border-gray-200 text-gray-600' : 'bg-[#0E1220] border-[#1E2538] text-gray-400'
+                    isLight ? 'bg-[#F0F3EF] border-[#E2E8E3] text-[#667875]' : 'bg-[#10161D] border-[#1E293B] text-gray-400'
                   )}
                 >
-                  <div className={cn('font-bold text-xs flex items-center gap-2', isLight ? 'text-[#111827]' : 'text-gray-300')}>
+                  <div className={cn('font-bold text-xs flex items-center gap-2', isLight ? 'text-[#172A29]' : 'text-gray-300')}>
                     <Lock className="w-4 h-4" />
                     Agent Not Executed
                   </div>
@@ -819,31 +937,31 @@ export const AgentWorkspacePage: React.FC = () => {
                   className={cn(
                     'p-4 rounded-xl border text-xs space-y-3 font-mono leading-relaxed max-h-72 overflow-y-auto',
                     isLight
-                      ? 'bg-[#F9FAFB] border-[#E5E7EB] text-[#374151]'
-                      : 'bg-[#0A0D18] border-[#1E2538] text-gray-300'
+                      ? 'bg-[#F0F3EF]/50 border-[#E2E8E3] text-[#172A29]'
+                      : 'bg-[#0B0F14] border-[#1E293B] text-gray-300'
                   )}
                 >
                   {selectedState.outputData ? (
                     <p className="whitespace-pre-wrap">{selectedState.outputData}</p>
                   ) : (
                     <>
-                      <p className={cn('font-semibold', isLight ? 'text-[#111827]' : 'text-gray-200')}>
+                      <p className={cn('font-semibold', isLight ? 'text-[#172A29]' : 'text-gray-200')}>
                         Analyzing contamination data and yield metrics from the collected sources...
                       </p>
                       <div className="space-y-1.5 pt-1 text-xs">
-                        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                        <div className="flex items-center gap-2 text-[#25865E] dark:text-[#34D399]">
                           <span>✓</span>
                           <span>Extracting key numerical findings</span>
                         </div>
-                        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                        <div className="flex items-center gap-2 text-[#25865E] dark:text-[#34D399]">
                           <span>✓</span>
                           <span>Comparing against industry benchmarks</span>
                         </div>
-                        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                        <div className="flex items-center gap-2 text-[#25865E] dark:text-[#34D399]">
                           <span>✓</span>
                           <span>Identifying potential discrepancies</span>
                         </div>
-                        <div className="flex items-center gap-2 text-[#0E5B59] dark:text-[#22D3EE]">
+                        <div className="flex items-center gap-2 text-[#12615D] dark:text-[#67C9C5]">
                           <span>○</span>
                           <span>Synthesizing insights for verification</span>
                         </div>
@@ -859,10 +977,10 @@ export const AgentWorkspacePage: React.FC = () => {
           {inspectorTab === 'evidence' && (
             <div className="space-y-3 flex-1 overflow-y-auto max-h-80 pr-1">
               <div className="flex items-center justify-between pb-1">
-                <span className={cn('text-xs font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
+                <span className={cn('text-xs font-bold', isLight ? 'text-[#172A29]' : 'text-white')}>
                   Retrieved Research Grounding Records
                 </span>
-                <span className="text-[11px] font-mono text-[#0E5B59] dark:text-[#22D3EE] font-semibold">
+                <span className="text-[11px] font-mono text-[#12615D] dark:text-[#67C9C5] font-semibold">
                   {parsedEvidence.length} Sources Found
                 </span>
               </div>
@@ -875,18 +993,18 @@ export const AgentWorkspacePage: React.FC = () => {
                       className={cn(
                         'p-3.5 rounded-xl border text-xs space-y-1.5 transition-colors',
                         isLight
-                          ? 'bg-[#F9FAFB] border-[#E5E7EB]'
-                          : 'bg-[#0A0D18] border-[#1E2538]'
+                          ? 'bg-[#F0F3EF]/50 border-[#E2E8E3]'
+                          : 'bg-[#0B0F14] border-[#1E293B]'
                       )}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2">
                           {ev.type === 'document' ? (
-                            <FileText className="w-3.5 h-3.5 text-[#0E5B59] dark:text-[#22D3EE] shrink-0" />
+                            <FileText className="w-3.5 h-3.5 text-[#12615D] dark:text-[#67C9C5] shrink-0" />
                           ) : (
-                            <Globe className="w-3.5 h-3.5 text-[#286D78] dark:text-[#388B97] shrink-0" />
+                            <Globe className="w-3.5 h-3.5 text-[#397F86] dark:text-[#67C9C5] shrink-0" />
                           )}
-                          <span className={cn('font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
+                          <span className={cn('font-bold', isLight ? 'text-[#172A29]' : 'text-white')}>
                             {ev.title}
                           </span>
                         </div>
@@ -896,7 +1014,7 @@ export const AgentWorkspacePage: React.FC = () => {
                             Filtered
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/30">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#EAF5EE] dark:bg-[#10241B] text-[#25865E] dark:text-[#34D399] border border-[#CCE7DB] dark:border-[#1A3E2F]">
                             Accepted
                           </span>
                         )}
@@ -907,7 +1025,7 @@ export const AgentWorkspacePage: React.FC = () => {
                           href={ev.url}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-[11px] text-blue-600 dark:text-cyan-400 hover:underline flex items-center gap-1 font-mono break-all"
+                          className="text-[11px] text-[#12615D] dark:text-[#67C9C5] hover:underline flex items-center gap-1 font-mono break-all"
                         >
                           <span>{ev.url}</span>
                           <ExternalLink className="w-3 h-3 shrink-0" />
@@ -915,15 +1033,15 @@ export const AgentWorkspacePage: React.FC = () => {
                       )}
 
                       {ev.type === 'document' && (
-                        <div className="text-[11px] text-[#0E5B59] dark:text-[#22D3EE] font-mono">
+                        <div className="text-[11px] text-[#12615D] dark:text-[#67C9C5] font-mono">
                           Page {ev.pageNumber} &bull; Chunk #{ev.chunkIndex}
                         </div>
                       )}
 
                       <p
                         className={cn(
-                          'text-[11px] leading-relaxed pt-1 italic border-t border-gray-100 dark:border-[#1E2538]/60',
-                          isLight ? 'text-[#4B5563]' : 'text-gray-300'
+                          'text-[11px] leading-relaxed pt-1 italic border-t border-gray-100 dark:border-[#1E293B]/60',
+                          isLight ? 'text-[#667875]' : 'text-gray-300'
                         )}
                       >
                         "{ev.excerpt}"
@@ -947,7 +1065,7 @@ export const AgentWorkspacePage: React.FC = () => {
           {inspectorTab === 'logs' && (
             <div className="space-y-3 flex-1 overflow-y-auto max-h-80 pr-1">
               <div className="flex items-center justify-between pb-1">
-                <span className={cn('text-xs font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+                <span className={cn('text-xs font-bold', isLight ? 'text-[#172A29]' : 'text-white')}>
                   Chronological AgentRun Execution History
                 </span>
                 <span className="text-[11px] font-mono text-gray-400">
@@ -968,14 +1086,14 @@ export const AgentWorkspacePage: React.FC = () => {
                         className={cn(
                           'p-3 rounded-xl border text-xs space-y-1.5 transition-colors',
                           isLight
-                            ? 'bg-[#F9FAFB] border-[#E5E7EB]'
-                            : 'bg-[#0A0D18] border-[#1E2538]'
+                            ? 'bg-[#F0F3EF]/50 border-[#E2E8E3]'
+                            : 'bg-[#0B0F14] border-[#1E293B]'
                         )}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <Terminal className="w-3.5 h-3.5 text-[#0E5B59] dark:text-[#22D3EE]" />
-                            <span className={cn('font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
+                            <Terminal className="w-3.5 h-3.5 text-[#12615D] dark:text-[#67C9C5]" />
+                            <span className={cn('font-bold', isLight ? 'text-[#172A29]' : 'text-white')}>
                               {run.agent_name}
                             </span>
                           </div>
@@ -986,10 +1104,10 @@ export const AgentWorkspacePage: React.FC = () => {
                               className={cn(
                                 'px-2 py-0.5 rounded font-semibold',
                                 run.status === 'completed'
-                                  ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                  ? 'bg-[#EAF5EE] dark:bg-[#10241B] text-[#25865E] dark:text-[#34D399]'
                                   : run.status === 'failed'
-                                  ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400'
-                                  : 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                                  ? 'bg-[#FDF0EE] dark:bg-[#2B1413] text-[#B65A56] dark:text-[#F87171]'
+                                  : 'bg-[#E6F4F1] dark:bg-[#132B2A] text-[#12615D] dark:text-[#67C9C5]'
                               )}
                             >
                               {run.status.toUpperCase()}
@@ -1006,7 +1124,7 @@ export const AgentWorkspacePage: React.FC = () => {
                           <div
                             className={cn(
                               'text-[11px] p-2 rounded-lg font-mono truncate max-h-16 overflow-hidden',
-                              isLight ? 'bg-white border border-gray-200 text-gray-700' : 'bg-[#121626] text-gray-300'
+                              isLight ? 'bg-white border border-[#E2E8E3] text-[#172A29]' : 'bg-[#10161D] text-gray-300'
                             )}
                           >
                             {run.output_data}
@@ -1028,10 +1146,10 @@ export const AgentWorkspacePage: React.FC = () => {
           {inspectorTab === 'attempts' && (
             <div className="space-y-3 flex-1 overflow-y-auto max-h-80 pr-1">
               <div className="flex items-center justify-between pb-1">
-                <span className={cn('text-xs font-bold', isLight ? 'text-[#172321]' : 'text-white')}>
+                <span className={cn('text-xs font-bold', isLight ? 'text-[#172A29]' : 'text-white')}>
                   Execution Attempt History
                 </span>
-                <span className="text-[11px] font-mono text-[#0E5B59] dark:text-[#22D3EE]">
+                <span className="text-[11px] font-mono text-[#12615D] dark:text-[#67C9C5]">
                   {attempts.length} Total Attempts
                 </span>
               </div>
@@ -1054,17 +1172,17 @@ export const AgentWorkspacePage: React.FC = () => {
                               ? 'bg-[#E6F4F1] border-[#C8E4DE] shadow-xs'
                               : 'bg-[#132B2A] border-[#1E4B48] shadow-md'
                             : isLight
-                            ? 'bg-[#F9FAFB] border-[#E5E7EB] hover:bg-gray-50'
-                            : 'bg-[#0A0D18] border-[#1E2538] hover:bg-[#121626]'
+                            ? 'bg-[#F0F3EF]/50 border-[#E2E8E3] hover:bg-[#F0F3EF]'
+                            : 'bg-[#0B0F14] border-[#1E293B] hover:bg-[#10161D]'
                         )}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm text-[#0E5B59] dark:text-[#22D3EE]">
+                            <span className="font-bold text-sm text-[#12615D] dark:text-[#67C9C5]">
                               Attempt #{att.attemptNumber}
                             </span>
                             {att.isLatest && (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E6F4F1] dark:bg-[#132B2A] text-[#0E5B59] dark:text-[#22D3EE] border border-[#C8E4DE] dark:border-[#1E4B48]">
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E6F4F1] dark:bg-[#132B2A] text-[#12615D] dark:text-[#67C9C5] border border-[#C8E4DE] dark:border-[#1E4B48]">
                                 LATEST
                               </span>
                             )}
@@ -1074,10 +1192,10 @@ export const AgentWorkspacePage: React.FC = () => {
                             className={cn(
                               'px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase font-mono',
                               att.status === 'completed'
-                                ? 'bg-[#EAF5EE] dark:bg-[#10241B] text-[#21845A] dark:text-[#34D399]'
+                                ? 'bg-[#EAF5EE] dark:bg-[#10241B] text-[#25865E] dark:text-[#34D399]'
                                 : att.status === 'rejected'
-                                ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400'
-                                : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
+                                ? 'bg-[#FDF0EE] dark:bg-[#2B1413] text-[#B65A56] dark:text-[#F87171]'
+                                : 'bg-[#FDF5E8] dark:bg-[#2A2010] text-[#B98232] dark:text-[#C5A46D]'
                             )}
                           >
                             {att.status}
@@ -1090,7 +1208,7 @@ export const AgentWorkspacePage: React.FC = () => {
                         </div>
 
                         {failedRun && (
-                          <div className="text-[11px] text-rose-500 flex items-center gap-1 font-mono pt-1">
+                          <div className="text-[11px] text-[#B65A56] flex items-center gap-1 font-mono pt-1">
                             <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                             <span>Failed at {failedRun.agent_name}</span>
                           </div>
@@ -1100,7 +1218,7 @@ export const AgentWorkspacePage: React.FC = () => {
                   })
                 ) : (
                   <div className="p-3.5 rounded-xl border text-xs text-gray-400">
-                    <span className="font-bold text-[#0E5B59] font-mono">Attempt #1</span>
+                    <span className="font-bold text-[#12615D] font-mono">Attempt #1</span>
                     <span className="ml-2 font-mono">5 Agent Runs &bull; completed</span>
                   </div>
                 )}
@@ -1109,9 +1227,9 @@ export const AgentWorkspacePage: React.FC = () => {
           )}
 
           {/* Database Event Logs Panel (Always present in DOM to satisfy Vitest test assertions) */}
-          <div className="pt-3 border-t border-gray-100 dark:border-[#1E2538]">
+          <div className="pt-3 border-t border-gray-100 dark:border-[#1E293B]">
             <div className="flex items-center justify-between text-[11px] font-mono text-gray-400 mb-2">
-              <span className={cn('font-semibold', isLight ? 'text-[#172321]' : 'text-gray-300')}>
+              <span className={cn('font-semibold', isLight ? 'text-[#172A29]' : 'text-gray-300')}>
                 Database Event Logs
               </span>
               <span>SQLite AgentRun Stream</span>
@@ -1124,15 +1242,15 @@ export const AgentWorkspacePage: React.FC = () => {
                     key={att.attemptNumber}
                     className={cn(
                       'p-2.5 rounded-xl border flex items-center justify-between text-xs',
-                      isLight ? 'bg-[#F9FAFB] border-[#E5E7EB]' : 'bg-[#0A0D18] border-[#1E2538]'
+                      isLight ? 'bg-[#F0F3EF]/50 border-[#E2E8E3]' : 'bg-[#0B0F14] border-[#1E293B]'
                     )}
                   >
                     <div className="flex items-center gap-2 font-mono">
-                      <span className="text-[#0E5B59] dark:text-[#22D3EE] font-bold">
+                      <span className="text-[#12615D] dark:text-[#67C9C5] font-bold">
                         Attempt #{att.attemptNumber}
                       </span>
                       {att.isLatest && (
-                        <span className="text-[10px] bg-[#E6F4F1] dark:bg-[#132B2A] text-[#0E5B59] dark:text-[#22D3EE] px-1.5 py-0.2 rounded border border-[#C8E4DE] dark:border-[#1E4B48] font-bold">
+                        <span className="text-[10px] bg-[#E6F4F1] dark:bg-[#132B2A] text-[#12615D] dark:text-[#67C9C5] px-1.5 py-0.2 rounded border border-[#C8E4DE] dark:border-[#1E4B48] font-bold">
                           LATEST
                         </span>
                       )}
@@ -1146,10 +1264,10 @@ export const AgentWorkspacePage: React.FC = () => {
                 <div
                   className={cn(
                     'p-2.5 rounded-xl border flex items-center justify-between text-xs',
-                    isLight ? 'bg-[#F9FAFB] border-[#E5E7EB]' : 'bg-[#0A0D18] border-[#1E2538]'
+                    isLight ? 'bg-[#F0F3EF]/50 border-[#E2E8E3]' : 'bg-[#0B0F14] border-[#1E293B]'
                   )}
                 >
-                  <span className="text-[#0E5B59] dark:text-[#22D3EE] font-bold font-mono">
+                  <span className="text-[#12615D] dark:text-[#67C9C5] font-bold font-mono">
                     Attempt #1
                   </span>
                   <span className="text-[11px] text-gray-500 dark:text-gray-400 font-mono">
@@ -1161,7 +1279,7 @@ export const AgentWorkspacePage: React.FC = () => {
           </div>
 
           {/* Bottom Accent Highlight Line */}
-          <div className="h-[2px] bg-gradient-to-r from-[#0E5B59] via-[#286D78] to-transparent w-full absolute bottom-0 left-0" />
+          <div className="h-[2px] bg-gradient-to-r from-[#12615D] via-[#397F86] to-transparent w-full absolute bottom-0 left-0" />
         </div>
       </div>
     </div>
