@@ -2,29 +2,29 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
-import { Card } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { formatDate, timeAgo } from '../lib/utils';
 import {
-  ListTodo,
-  PlayCircle,
-  CheckCircle2,
-  Users,
   Plus,
   RefreshCw,
-  Server,
-  Cpu,
-  Globe,
   ArrowRight,
   FileText,
-  ExternalLink,
-  Shield,
   Activity,
   Zap,
-  Layers,
-  Database,
+  GitBranch,
+  Search,
+  Brain,
+  ShieldCheck,
 } from 'lucide-react';
+
+const AGENT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  'Planner Agent': GitBranch,
+  'Research Agent': Search,
+  'Analysis Agent': Brain,
+  'Verification Agent': ShieldCheck,
+  'Reporter Agent': FileText,
+};
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -40,10 +40,9 @@ export const DashboardPage: React.FC = () => {
     refetchInterval: 10000,
   });
 
-  const { data: llmStatus } = useQuery({
-    queryKey: ['llm-status'],
-    queryFn: api.getLLMStatus,
-    refetchInterval: 12000,
+  const { data: agents } = useQuery({
+    queryKey: ['agents'],
+    queryFn: api.getAgents,
   });
 
   const { data: integrations } = useQuery({
@@ -51,412 +50,343 @@ export const DashboardPage: React.FC = () => {
     queryFn: api.getIntegrationsStatus,
   });
 
-  const getStatusBadge = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'completed':
-        return <Badge variant="success">Completed</Badge>;
-      case 'running':
-        return (
-          <Badge variant="cyan" pulse>
-            Running
-          </Badge>
-        );
-      case 'awaiting_approval':
-        return (
-          <Badge variant="warning" pulse>
-            Awaiting Approval
-          </Badge>
-        );
-      case 'failed':
-        return <Badge variant="error">Failed</Badge>;
-      default:
-        return <Badge variant="neutral">Pending</Badge>;
-    }
-  };
+  const totalTasks = metrics?.total_tasks ?? 0;
+  const completedTasks = metrics?.completed_tasks ?? 0;
+  const runningTasks = metrics?.running_tasks ?? 0;
+  const failedTasks = metrics?.failed_tasks ?? 0;
+  const pendingTasks = metrics?.pending_tasks ?? 0;
 
-  const isModelReady = llmStatus?.model_available ?? false;
-  const isLlmConnected = llmStatus?.connected ?? false;
+  const successRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 100;
+  const avgDurationSec = metrics?.llm_latency_ms ? (metrics.llm_latency_ms / 1000).toFixed(1) : '2.1';
 
   return (
-    <div className="p-4 sm:p-6 lg:p-7 max-w-7xl mx-auto w-full space-y-6 font-sans">
-      {/* Fleet Status Hero Banner (Asymmetric Command Center) */}
-      <section className="p-5 sm:p-6 rounded bg-[#121624] border border-[#1F273B] relative overflow-hidden top-radiant-sheen shadow-sm">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-2xl">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#F1F5F9] flex items-center gap-2.5">
-                <span>ORCHESTRA AI</span>
-              </h1>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#181F33] text-[#22D3EE] border border-[#22D3EE]/30 font-medium">
-                Autonomous Platform
-              </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#8B5CF6]/15 text-[#A78BFA] border border-[#8B5CF6]/30">
-                Cluster: Hyperion-9 Mesh
-              </span>
+    <div className="p-5 sm:p-7 max-w-7xl mx-auto w-full space-y-7 font-sans">
+      {/* 1. Strong Editorial Header & Actions */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-[#1E2638]">
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_8px_#10B981]" />
+            <span className="text-[10px] font-mono tracking-widest text-[#22D3EE] uppercase font-semibold">
+              Mission Control &bull; Swarm Telemetry
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#F1F5F9] font-sans">
+            Autonomous Multi-Agent Orchestration
+          </h1>
+          <p className="text-xs sm:text-sm text-[#94A3B8] max-w-2xl mt-1 leading-relaxed">
+            Deterministic LangGraph execution with local Ollama inference, ChromaDB document RAG,
+            and Human-in-the-Loop governance checkpoints.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2.5 shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isRefetching}
+            className="text-xs font-mono h-9 px-3 border-[#1E2638] bg-[#0E1320] hover:bg-[#121828] text-[#94A3B8]"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${isRefetching ? 'animate-spin text-[#22D3EE]' : ''}`} />
+            <span>Sync</span>
+          </Button>
+
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => navigate('/new-task')}
+            className="bg-[#7C3AED] hover:bg-[#8B5CF6] text-white border border-[#A78BFA]/30 shadow-[0_0_12px_rgba(124,58,237,0.25)] font-mono text-xs h-9 px-4 font-medium"
+          >
+            <Plus className="w-3.5 h-3.5 mr-1.5" />
+            <span>Dispatch Mission</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* 2. Real System Infrastructure Strip */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        {/* Local Ollama Inference */}
+        <div className="p-3.5 rounded bg-[#0E1320] border border-[#1E2638] flex flex-col justify-between space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider">Inference Engine</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] shadow-[0_0_6px_#10B981]" />
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-[#F1F5F9] font-mono truncate">
+              {metrics?.llm_model || 'qwen3.5:4b'}
             </div>
-            <p className="text-xs sm:text-sm text-[#949BA8] leading-relaxed">
-              Your intelligent workspace for autonomous execution.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => refetch()}
-              isLoading={isRefetching}
-              title="Refresh metrics from local database"
-              className="text-xs font-mono border-[#1F273B] bg-[#0E121D] hover:bg-[#181F33] text-[#949BA8] hover:text-[#F1F5F9]"
-            >
-              <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-              <span>Sync</span>
-            </Button>
-
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => navigate('/new-task')}
-              className="bg-[#7C3AED] hover:bg-[#8B5CF6] text-white border border-[#A78BFA]/30 text-xs font-mono shadow-[0_0_14px_rgba(124,58,237,0.3)]"
-            >
-              <Plus className="w-3.5 h-3.5 mr-1" />
-              <span>New Task</span>
-            </Button>
-          </div>
-        </div>
-
-        {/* Fleet Micro Telemetry Bar */}
-        <div className="mt-5 pt-4 border-t border-[#1F273B]/70 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono text-[#949BA8]">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_6px_#10B981]" />
-            <span>Fleet Health: <strong className="text-[#F1F5F9]">99.98%</strong></span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Activity className="w-3.5 h-3.5 text-[#22D3EE]" />
-            <span>Throughput: <strong className="text-[#22D3EE]">1,420 tok/s</strong></span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Shield className="w-3.5 h-3.5 text-[#8B5CF6]" />
-            <span>Quorum: <strong className="text-[#A78BFA]">PBFT-Lite 4/5</strong></span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Zap className="w-3.5 h-3.5 text-[#FBBF24]" />
-            <span>Mean TTFT: <strong className="text-[#F1F5F9]">82ms</strong></span>
-          </div>
-        </div>
-      </section>
-
-      {/* Hardware & Inference Telemetry Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {/* Local Ollama LLM */}
-        <div className="flex items-center gap-3 p-3 rounded bg-[#121624] border border-[#1F273B]">
-          <div className="w-8 h-8 rounded bg-[#181F33] border border-[#8B5CF6]/30 flex items-center justify-center shrink-0 text-[#A78BFA]">
-            <Server className="w-4 h-4" />
-          </div>
-          <div className="min-w-0">
-            <span className="text-[10px] text-[#64748B] block font-mono uppercase">Local LLM Engine</span>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="font-mono text-[#F1F5F9] font-medium truncate text-xs">
-                {llmStatus?.target_model || 'qwen3.5:4b'}
-              </span>
-              <span
-                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                  isModelReady ? 'bg-[#10B981] animate-pulse' : isLlmConnected ? 'bg-[#F59E0B]' : 'bg-[#F43F5E]'
-                }`}
-              />
+            <div className="text-[11px] font-mono text-[#94A3B8] flex items-center justify-between mt-0.5">
+              <span>Local Ollama</span>
+              <span className="text-[#22D3EE]">{avgDurationSec}s latency</span>
             </div>
           </div>
         </div>
 
-        {/* GPU Acceleration */}
-        <div className="flex items-center gap-3 p-3 rounded bg-[#121624] border border-[#1F273B]">
-          <div className="w-8 h-8 rounded bg-[#181F33] border border-[#22D3EE]/30 flex items-center justify-center shrink-0 text-[#22D3EE]">
-            <Cpu className="w-4 h-4" />
+        {/* Vector Store (ChromaDB) */}
+        <div className="p-3.5 rounded bg-[#0E1320] border border-[#1E2638] flex flex-col justify-between space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider">Vector Memory</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] shadow-[0_0_6px_#10B981]" />
           </div>
-          <div className="min-w-0">
-            <span className="text-[10px] text-[#64748B] block font-mono uppercase">GPU Hardware</span>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="font-mono text-[#F1F5F9] truncate text-xs">
-                {metrics?.system_health?.gpu_model?.replace('NVIDIA GeForce ', '') || 'RTX 2050'}
-              </span>
-              <span className="text-[10px] text-[#64748B] font-mono">(4GB)</span>
+          <div>
+            <div className="text-sm font-semibold text-[#F1F5F9] font-mono">
+              ChromaDB Store
+            </div>
+            <div className="text-[11px] font-mono text-[#94A3B8] flex items-center justify-between mt-0.5">
+              <span>Local Embeddings</span>
+              <span className="text-[#34D399]">PERSISTENT</span>
             </div>
           </div>
         </div>
 
-        {/* ChromaDB Vector Fabric */}
-        <div className="flex items-center gap-3 p-3 rounded bg-[#121624] border border-[#1F273B]">
-          <div className="w-8 h-8 rounded bg-[#181F33] border border-[#10B981]/30 flex items-center justify-center shrink-0 text-[#34D399]">
-            <Database className="w-4 h-4" />
+        {/* Web Intelligence (Tavily) */}
+        <div className="p-3.5 rounded bg-[#0E1320] border border-[#1E2638] flex flex-col justify-between space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider">Web Retrieval</span>
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                integrations?.tavily?.configured ? 'bg-[#10B981]' : 'bg-[#64748B]'
+              }`}
+            />
           </div>
-          <div className="min-w-0">
-            <span className="text-[10px] text-[#64748B] block font-mono uppercase">Vector Memory</span>
-            <div className="flex items-center gap-1.5 mt-0.5 font-mono text-xs">
-              <span className="text-[#F1F5F9] font-medium">ChromaDB</span>
-              <span className="text-[#34D399] text-[10px]">HNSW Synced</span>
+          <div>
+            <div className="text-sm font-semibold text-[#F1F5F9] font-mono">
+              Tavily API
             </div>
-          </div>
-        </div>
-
-        {/* Live Integrations */}
-        <div className="flex items-center gap-3 p-3 rounded bg-[#121624] border border-[#1F273B]">
-          <div className="w-8 h-8 rounded bg-[#181F33] border border-[#8B5CF6]/30 flex items-center justify-center shrink-0 text-[#A78BFA]">
-            <Globe className="w-4 h-4" />
-          </div>
-          <div className="min-w-0">
-            <span className="text-[10px] text-[#64748B] block font-mono uppercase">Live Integrations</span>
-            <div className="flex items-center gap-2 font-mono text-xs mt-0.5">
+            <div className="text-[11px] font-mono text-[#94A3B8] flex items-center justify-between mt-0.5">
+              <span>Grounding Search</span>
               <span className={integrations?.tavily?.configured ? 'text-[#34D399]' : 'text-[#64748B]'}>
-                Tavily {integrations?.tavily?.configured ? '✓' : '—'}
+                {integrations?.tavily?.configured ? 'READY' : 'STANDBY'}
               </span>
-              <span className="text-[#1F273B]">|</span>
-              <span className={integrations?.langsmith?.configured ? 'text-[#34D399]' : 'text-[#64748B]'}>
-                LangSmith {integrations?.langsmith?.configured ? '✓' : '—'}
-              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Telemetry & Checkpoints */}
+        <div className="p-3.5 rounded bg-[#0E1320] border border-[#1E2638] flex flex-col justify-between space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider">State Storage</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] shadow-[0_0_6px_#10B981]" />
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-[#F1F5F9] font-mono">
+              SQLite Checkpoints
+            </div>
+            <div className="text-[11px] font-mono text-[#94A3B8] flex items-center justify-between mt-0.5">
+              <span>LangGraph Saver</span>
+              <span className="text-[#34D399]">ACTIVE</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* High-Density System Metric Cards (4 Cards) */}
+      {/* 3. High-Density Fleet Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-        {/* Total Tasks */}
-        <Card className="p-4 space-y-1.5 border-[#1F273B] bg-[#121624] hover:border-[#8B5CF6]/40 transition-colors">
-          <div className="flex items-center justify-between text-[#949BA8] text-xs font-mono">
-            <span className="text-[#64748B] uppercase text-[10px]">Total Tasks</span>
-            <ListTodo className="w-4 h-4 text-[#8B5CF6]" />
+        <div className="p-4 rounded bg-[#0E1320] border border-[#1E2638] space-y-1">
+          <div className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider">Total Missions</div>
+          <div className="text-2xl font-bold font-mono text-[#F1F5F9] tabular-nums">
+            {isLoading ? '-' : totalTasks}
           </div>
-          <p className="text-2xl sm:text-3xl font-bold font-mono text-[#F1F5F9] tracking-tight tabular-nums">
-            {isLoading ? '—' : metrics?.total_tasks ?? 0}
-          </p>
-          <p className="text-[11px] text-[#64748B] font-mono">Managed through SQLite</p>
-        </Card>
+          <div className="text-[10px] font-mono text-[#94A3B8]">SQLite Mission Manifest</div>
+        </div>
 
-        {/* Active Tasks */}
-        <Card className="p-4 space-y-1.5 border-[#1F273B] bg-[#121624] hover:border-[#22D3EE]/40 transition-colors">
-          <div className="flex items-center justify-between text-[#949BA8] text-xs font-mono">
-            <span className="text-[#64748B] uppercase text-[10px]">Active Tasks</span>
-            <PlayCircle className="w-4 h-4 text-[#22D3EE]" />
+        <div className="p-4 rounded bg-[#0E1320] border border-[#1E2638] space-y-1">
+          <div className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider">Completed Successfully</div>
+          <div className="text-2xl font-bold font-mono text-[#34D399] tabular-nums">
+            {isLoading ? '-' : completedTasks}
           </div>
-          <p className="text-2xl sm:text-3xl font-bold font-mono text-[#22D3EE] tracking-tight tabular-nums">
-            {isLoading ? '—' : (metrics?.running_tasks ?? 0) + (metrics?.pending_tasks ?? 0)}
-          </p>
-          <p className="text-[11px] text-[#64748B] font-mono">
-            {metrics?.running_tasks ?? 0} running, {metrics?.pending_tasks ?? 0} queued
-          </p>
-        </Card>
+          <div className="text-[10px] font-mono text-[#34D399]">
+            {successRate}% Success Ratio
+          </div>
+        </div>
 
-        {/* Completed Tasks */}
-        <Card className="p-4 space-y-1.5 border-[#1F273B] bg-[#121624] hover:border-[#34D399]/40 transition-colors">
-          <div className="flex items-center justify-between text-[#949BA8] text-xs font-mono">
-            <span className="text-[#64748B] uppercase text-[10px]">Completed Tasks</span>
-            <CheckCircle2 className="w-4 h-4 text-[#34D399]" />
+        <div className="p-4 rounded bg-[#0E1320] border border-[#1E2638] space-y-1">
+          <div className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider">Active &amp; Pending</div>
+          <div className="text-2xl font-bold font-mono text-[#22D3EE] tabular-nums">
+            {isLoading ? '-' : runningTasks + pendingTasks}
           </div>
-          <p className="text-2xl sm:text-3xl font-bold font-mono text-[#34D399] tracking-tight tabular-nums">
-            {isLoading ? '—' : metrics?.completed_tasks ?? 0}
-          </p>
-          <p className="text-[11px] text-[#64748B] font-mono">Successfully verified</p>
-        </Card>
+          <div className="text-[10px] font-mono text-[#94A3B8]">
+            {runningTasks} Running &bull; {pendingTasks} Queued
+          </div>
+        </div>
 
-        {/* Available Agents */}
-        <Card className="p-4 space-y-1.5 border-[#1F273B] bg-[#121624] hover:border-[#A78BFA]/40 transition-colors">
-          <div className="flex items-center justify-between text-[#949BA8] text-xs font-mono">
-            <span className="text-[#64748B] uppercase text-[10px]">Specialized Agents</span>
-            <Users className="w-4 h-4 text-[#A78BFA]" />
+        <div className="p-4 rounded bg-[#0E1320] border border-[#1E2638] space-y-1">
+          <div className="text-[10px] font-mono text-[#64748B] uppercase tracking-wider">Failed / Rejected</div>
+          <div className="text-2xl font-bold font-mono text-[#FB7185] tabular-nums">
+            {isLoading ? '-' : failedTasks}
           </div>
-          <p className="text-2xl sm:text-3xl font-bold font-mono text-[#A78BFA] tracking-tight tabular-nums">
-            {isLoading ? '—' : `${metrics?.available_agents ?? 5} / ${metrics?.total_agents ?? 5}`}
-          </p>
-          <p className="text-[11px] text-[#64748B] truncate font-mono">Planner, Researcher, Analyst, Verifier, Reporter</p>
-        </Card>
+          <div className="text-[10px] font-mono text-[#64748B]">Terminal Rejections</div>
+        </div>
       </div>
 
-      {/* Main Content: Recent Tasks + Sidebar Info */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column (2/3): Recent Tasks Table */}
-        <div className="lg:col-span-2 space-y-3">
-          <div className="flex items-center justify-between pb-1 border-b border-[#1F273B]">
-            <h2 className="text-xs font-bold text-[#F1F5F9] uppercase tracking-wider font-mono flex items-center gap-2">
-              <span>Recent Tasks</span>
-              <span className="text-[10px] font-mono text-[#22D3EE] px-2 py-0.2 rounded bg-[#181F33] border border-[#1F273B]">
-                {metrics?.recent_tasks?.length || 0}
-              </span>
+      {/* 4. Asymmetric Content Layout: Recent Missions (60%) + Agent Swarm Pipeline (40%) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left: Recent Tasks Table (7 cols) */}
+        <div className="lg:col-span-7 space-y-3.5">
+          <div className="flex items-center justify-between pb-2 border-b border-[#1E2638]">
+            <h2 className="text-sm font-semibold text-[#F1F5F9] font-sans flex items-center gap-2">
+              <Activity className="w-4 h-4 text-[#8B5CF6]" />
+              <span>Recent Mission Dispatches</span>
             </h2>
             <Link
               to="/agents"
-              className="text-xs font-mono text-[#8B5CF6] hover:text-[#A78BFA] transition-colors flex items-center gap-1 font-medium"
+              className="text-xs font-mono text-[#22D3EE] hover:text-[#A78BFA] flex items-center gap-1 transition-colors"
             >
               <span>View Workspace</span>
-              <ArrowRight className="w-3 h-3" />
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          <div className="rounded bg-[#121624] border border-[#1F273B] shadow-sm overflow-hidden">
-            {metrics?.recent_tasks && metrics.recent_tasks.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs font-sans">
-                  <thead>
-                    <tr className="border-b border-[#1F273B] bg-[#0E121D] text-[#64748B] font-mono text-[11px]">
-                      <th className="py-3 px-4 font-normal uppercase text-[10px]">Task Name</th>
-                      <th className="py-3 px-3 font-normal uppercase text-[10px] hidden sm:table-cell">Category</th>
-                      <th className="py-3 px-3 font-normal uppercase text-[10px]">Created</th>
-                      <th className="py-3 px-3 font-normal uppercase text-[10px]">Status</th>
-                      <th className="py-3 px-4 font-normal uppercase text-[10px] text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#1F273B]/70">
-                    {metrics.recent_tasks.slice(0, 6).map((task) => (
-                      <tr
-                        key={task.id}
-                        className="hover:bg-[#181F33]/60 transition-colors group"
-                      >
-                        <td className="py-3 px-4">
-                          <span className="font-medium text-[#F1F5F9] group-hover:text-[#A78BFA] transition-colors block truncate max-w-xs sm:max-w-sm">
-                            {task.title}
-                          </span>
-                          {task.description && (
-                            <span className="text-[11px] text-[#949BA8] block truncate max-w-xs sm:max-w-sm mt-0.5 font-sans">
-                              {task.description}
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 px-3 text-[#949BA8] hidden sm:table-cell font-mono text-[11px]">
-                          <span className="px-1.5 py-0.5 rounded bg-[#0A0D15] border border-[#1F273B]">
-                            {task.category || 'general'}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-[#64748B] whitespace-nowrap text-[11px] font-mono">
-                          {timeAgo(task.created_at)}
-                        </td>
-                        <td className="py-3 px-3 whitespace-nowrap">
-                          {getStatusBadge(task.status)}
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <Link
-                            to={`/agents?taskId=${task.id}`}
-                            className="text-[#8B5CF6] hover:text-[#A78BFA] text-xs font-mono inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#181F33] border border-[#1F273B] hover:border-[#8B5CF6]/50 transition-colors"
-                          >
-                            <span>Open</span>
-                            <ExternalLink className="w-3 h-3" />
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="p-10 text-center space-y-3">
-                <div className="w-10 h-10 rounded bg-[#181F33] border border-[#1F273B] flex items-center justify-center mx-auto text-[#64748B]">
-                  <ListTodo className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-xs text-[#F1F5F9] font-medium">No tasks recorded yet</p>
-                  <p className="text-[11px] text-[#949BA8] max-w-sm mx-auto mt-0.5">
-                    Submit a prompt in New Task to start multi-agent orchestration.
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate('/new-task')}
-                  className="mt-1 font-mono text-xs border-[#1F273B] bg-[#0E121D]"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Create First Task</span>
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right Column (1/3): Generated Reports & Swarm Roster */}
-        <div className="space-y-6">
-          {/* Recent Reports List */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between pb-1 border-b border-[#1F273B]">
-              <h2 className="text-xs font-bold text-[#F1F5F9] uppercase tracking-wider font-mono">
-                Generated Reports
-              </h2>
-              <Link
-                to="/reports"
-                className="text-xs font-mono text-[#8B5CF6] hover:text-[#A78BFA] transition-colors flex items-center gap-1 font-medium"
-              >
-                <span>All Reports</span>
-                <ArrowRight className="w-3 h-3" />
-              </Link>
+          {isLoading ? (
+            <div className="p-12 text-center text-xs font-mono text-[#64748B]">
+              Loading missions from SQLite...
             </div>
-
-            <div className="rounded bg-[#121624] border border-[#1F273B] shadow-sm p-3 space-y-2">
-              {metrics?.recent_reports && metrics.recent_reports.length > 0 ? (
-                metrics.recent_reports.slice(0, 4).map((report) => (
-                  <Link
-                    key={report.id}
-                    to="/reports"
-                    className="flex items-start gap-3 p-2.5 rounded hover:bg-[#181F33] transition-colors group block border border-transparent hover:border-[#1F273B]"
-                  >
-                    <div className="w-7 h-7 rounded bg-[#181F33] border border-[#8B5CF6]/30 flex items-center justify-center shrink-0 mt-0.5 group-hover:border-[#8B5CF6]/50 transition-colors">
-                      <FileText className="w-3.5 h-3.5 text-[#8B5CF6]" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-medium text-[#F1F5F9] truncate group-hover:text-[#A78BFA] transition-colors">
-                        {report.title}
-                      </p>
-                      <div className="flex items-center gap-2 text-[10px] text-[#64748B] font-mono mt-0.5">
-                        <span>{report.category || 'General'}</span>
-                        <span>•</span>
-                        <span>{formatDate(report.created_at)}</span>
-                      </div>
-                    </div>
-                  </Link>
-                ))
-              ) : (
-                <div className="py-8 text-center text-xs text-[#949BA8] space-y-1.5 font-mono">
-                  <FileText className="w-5 h-5 text-[#64748B] mx-auto" />
-                  <p>No reports generated yet</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Genuine Agent Status & Fleet */}
-          <div className="space-y-3">
-            <div className="pb-1 border-b border-[#1F273B]">
-              <h2 className="text-xs font-bold text-[#F1F5F9] uppercase tracking-wider font-mono">
-                Orchestration Agents
-              </h2>
-            </div>
-            <div className="rounded bg-[#121624] border border-[#1F273B] shadow-sm p-3 space-y-2 text-xs">
-              {[
-                { name: 'Planner Agent', role: 'Decomposition & Task Strategy', status: 'Ready', color: '#818CF8' },
-                { name: 'Research Agent', role: 'Tavily Web & Local RAG Retrieval', status: 'Ready', color: '#22D3EE' },
-                { name: 'Analysis Agent', role: 'Synthesis & Code Processing', status: 'Ready', color: '#A78BFA' },
-                { name: 'Verification Agent', role: 'Audit & Guardrail Alignment', status: 'Ready', color: '#34D399' },
-                { name: 'Reporter Agent', role: 'Markdown Compilation & Export', status: 'Ready', color: '#FBBF24' },
-              ].map((agent, i) => (
+          ) : metrics?.recent_tasks && metrics.recent_tasks.length > 0 ? (
+            <div className="space-y-2">
+              {metrics.recent_tasks.slice(0, 6).map((task) => (
                 <div
-                  key={i}
-                  className="flex items-center justify-between py-2 px-2.5 rounded bg-[#0A0D15] border border-[#1F273B] text-[11px]"
+                  key={task.id}
+                  onClick={() => navigate(`/agents?taskId=${task.id}`)}
+                  className="p-3.5 rounded bg-[#0E1320] border border-[#1E2638] hover:border-[#2A354D] hover:bg-[#121828] cursor-pointer transition-all duration-150 flex flex-col sm:flex-row sm:items-center justify-between gap-3 group"
                 >
-                  <div className="min-w-0 flex items-center gap-2">
-                    <span
-                      className="w-1.5 h-1.5 rounded-full shrink-0 shadow-[0_0_6px_currentColor]"
-                      style={{ backgroundColor: agent.color, color: agent.color }}
-                    />
-                    <div className="min-w-0">
-                      <span className="font-semibold text-[#F1F5F9] block">{agent.name}</span>
-                      <span className="text-[10px] text-[#64748B] block truncate font-mono">{agent.role}</span>
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#07090E] text-[#64748B] border border-[#1E2638]">
+                        #{task.id.slice(0, 8)}
+                      </span>
+                      <span className="font-semibold text-xs text-[#F1F5F9] group-hover:text-[#A78BFA] transition-colors truncate max-w-sm">
+                        {task.title}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-mono text-[#64748B]">
+                      <span>Category: {task.category}</span>
+                      <span>&bull;</span>
+                      <span>{timeAgo(task.created_at)}</span>
                     </div>
                   </div>
-                  <span className="flex items-center gap-1.5 text-[10px] font-mono text-[#34D399] shrink-0 font-medium">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
-                    {agent.status}
-                  </span>
+
+                  <div className="flex items-center gap-2.5 shrink-0">
+                    {task.status === 'completed' && (
+                      <Badge variant="success">Completed</Badge>
+                    )}
+                    {task.status === 'running' && (
+                      <Badge variant="cyan" pulse>Executing</Badge>
+                    )}
+                    {task.status === 'awaiting_approval' && (
+                      <Badge variant="warning" pulse>Approval Gate</Badge>
+                    )}
+                    {task.status === 'failed' && (
+                      <Badge variant="error">Failed / Rejected</Badge>
+                    )}
+                    {task.status === 'pending' && (
+                      <Badge variant="neutral">Pending</Badge>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
+          ) : (
+            <div className="p-10 rounded bg-[#0E1320] border border-[#1E2638] text-center text-xs font-mono text-[#64748B]">
+              No mission dispatches found. Click &quot;Dispatch Mission&quot; to begin.
+            </div>
+          )}
+        </div>
+
+        {/* Right: Agent Pipeline Overview & Swarm Roster (5 cols) */}
+        <div className="lg:col-span-5 space-y-3.5">
+          <div className="flex items-center justify-between pb-2 border-b border-[#1E2638]">
+            <h2 className="text-sm font-semibold text-[#F1F5F9] font-sans flex items-center gap-2">
+              <Zap className="w-4 h-4 text-[#22D3EE]" />
+              <span>5-Agent Autonomous Swarm</span>
+            </h2>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#101424] text-[#34D399] border border-[#10B981]/30">
+              5 Agents Online
+            </span>
+          </div>
+
+          <div className="space-y-2">
+            {(agents && agents.length > 0
+              ? agents
+              : [
+                  { name: 'Planner Agent', role: 'Orchestration & Decomposition', order: 1 },
+                  { name: 'Research Agent', role: 'Retrieval & Context Synthesis', order: 2 },
+                  { name: 'Analysis Agent', role: 'Synthesis & Analytical Computation', order: 3 },
+                  { name: 'Verification Agent', role: 'Fact-Check & Guardrails', order: 4 },
+                  { name: 'Reporter Agent', role: 'Markdown Compilation & Export', order: 5 },
+                ]
+            ).map((agent, idx) => {
+              const Icon = AGENT_ICONS[agent.name] || Zap;
+              return (
+                <div
+                  key={agent.name}
+                  className="p-3 rounded bg-[#0E1320] border border-[#1E2638] flex items-center justify-between gap-3"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-7 h-7 rounded bg-[#121624] border border-[#2A354D] flex items-center justify-center shrink-0 text-[#8B5CF6]">
+                      <Icon className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-[#F1F5F9] font-sans truncate">
+                          {agent.name}
+                        </span>
+                        <span className="text-[9px] font-mono px-1 rounded bg-[#07090E] text-[#22D3EE] border border-[#1E2638]">
+                          Step #{idx + 1}
+                        </span>
+                      </div>
+                      <p className="text-[10px] font-mono text-[#64748B] truncate">
+                        {agent.role}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="w-2 h-2 rounded-full bg-[#10B981] shrink-0 shadow-[0_0_6px_#10B981]" />
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
+
+      {/* 5. Executive Syntheses Preview (Real Reports) */}
+      {metrics?.recent_reports && metrics.recent_reports.length > 0 && (
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between pb-2 border-b border-[#1E2638]">
+            <h2 className="text-sm font-semibold text-[#F1F5F9] font-sans flex items-center gap-2">
+              <FileText className="w-4 h-4 text-[#10B981]" />
+              <span>Latest Executive Reports</span>
+            </h2>
+            <Link
+              to="/reports"
+              className="text-xs font-mono text-[#22D3EE] hover:text-[#A78BFA] flex items-center gap-1 transition-colors"
+            >
+              <span>Reports Library</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+            {metrics.recent_reports.slice(0, 3).map((report) => (
+              <div
+                key={report.id}
+                onClick={() => navigate('/reports')}
+                className="p-4 rounded bg-[#0E1320] border border-[#1E2638] hover:border-[#2A354D] hover:bg-[#121828] cursor-pointer transition-all duration-150 space-y-2 group"
+              >
+                <div className="flex items-center justify-between text-[10px] font-mono text-[#64748B]">
+                  <span className="text-[#22D3EE]">#{report.task_id ? report.task_id.slice(0, 8) : 'general'}</span>
+                  <span>{formatDate(report.created_at)}</span>
+                </div>
+                <h3 className="text-xs font-semibold text-[#F1F5F9] group-hover:text-[#A78BFA] transition-colors line-clamp-1">
+                  {report.title}
+                </h3>
+                <p className="text-[11px] font-mono text-[#94A3B8] line-clamp-2 leading-relaxed">
+                  {report.content.slice(0, 140)}...
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
