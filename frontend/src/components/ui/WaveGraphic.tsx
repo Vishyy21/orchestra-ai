@@ -190,3 +190,4 @@ export const WaveGraphic: React.FC<WaveGraphicProps> = ({ className = '', varian
     </div>
   );
 };
+

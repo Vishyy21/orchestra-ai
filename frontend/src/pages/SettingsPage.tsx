@@ -1,22 +1,28 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { api } from '../lib/api';
+import { useTheme } from '../lib/theme';
 import {
   Server,
   Play,
   Globe,
   Terminal,
+  Sun,
+  Moon,
+  Sliders,
 } from 'lucide-react';
+import { cn } from '../lib/utils';
 
 export const SettingsPage: React.FC = () => {
+  const { theme, setTheme } = useTheme();
+  const isLight = theme === 'light';
+
   const [testPrompt, setTestPrompt] = useState(
     'Ping Orchestra AI. Confirm identity and local inference readiness in one sentence.'
   );
   const [testResult, setTestResult] = useState<any | null>(null);
 
-  const {
-    data: llmStatus,
-  } = useQuery({
+  const { data: llmStatus } = useQuery({
     queryKey: ['llm-status'],
     queryFn: api.getLLMStatus,
     refetchInterval: 12000,
@@ -28,10 +34,7 @@ export const SettingsPage: React.FC = () => {
     refetchInterval: 20000,
   });
 
-  const {
-    data: integrations,
-    refetch: refetchIntegrations,
-  } = useQuery({
+  const { data: integrations, refetch: refetchIntegrations } = useQuery({
     queryKey: ['integrations-status'],
     queryFn: api.getIntegrationsStatus,
   });
@@ -65,59 +68,183 @@ export const SettingsPage: React.FC = () => {
   const isModelReady = llmStatus?.model_available ?? false;
 
   return (
-    <div className="p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-6 font-sans">
+    <div
+      className={cn(
+        'p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-6 font-sans transition-colors duration-200',
+        isLight ? 'text-[#111827]' : 'text-[#F1F5F9]'
+      )}
+    >
       {/* 1. Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+        <h1
+          className={cn(
+            'text-2xl sm:text-3xl font-extrabold tracking-tight font-serif',
+            isLight ? 'text-[#111827]' : 'text-white'
+          )}
+        >
           Settings
         </h1>
-        <p className="text-xs text-gray-400 mt-1">
-          System configuration, Ollama model inference, and API keys.
+        <p className={cn('text-xs mt-1', isLight ? 'text-[#6B7280]' : 'text-gray-400')}>
+          System configuration, visual theme preference, Ollama model inference, and API keys.
         </p>
       </div>
 
-      {/* 2. Ollama Inference Configuration */}
-      <div className="rounded-2xl bg-[#121626] border border-[#1E2538] p-6 shadow-xl space-y-5">
-        <div className="flex items-center justify-between pb-3 border-b border-[#1E2538]">
+      {/* 2. Visual Theme Preference Card */}
+      <div
+        className={cn(
+          'rounded-2xl border p-6 space-y-4 shadow-xs transition-all',
+          isLight ? 'bg-[#FFFFFF] border-[#EAEAE7]' : 'bg-[#121626] border-[#1E2538]'
+        )}
+      >
+        <div className="flex items-center gap-2.5 pb-3 border-b border-gray-100 dark:border-[#1E2538]">
+          <Sliders className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+          <h2 className={cn('text-sm font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+            Visual Appearance &amp; Theme
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Option A: Midnight Dark */}
+          <div
+            onClick={() => setTheme('dark')}
+            className={cn(
+              'p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3.5',
+              theme === 'dark'
+                ? 'border-purple-500 bg-purple-500/10 shadow-sm ring-1 ring-purple-500'
+                : isLight
+                ? 'bg-[#F9FAFB] border-[#E5E7EB] hover:bg-gray-50'
+                : 'bg-[#0A0D18] border-[#1E2538] hover:bg-[#151B2E]'
+            )}
+          >
+            <div className="w-9 h-9 rounded-xl bg-[#0B0D14] border border-[#1E2538] text-purple-400 flex items-center justify-center shrink-0">
+              <Moon className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className={cn('text-xs font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+                  Midnight Dark
+                </span>
+                {theme === 'dark' && (
+                  <span className="text-[10px] font-semibold text-purple-400 bg-purple-950/60 px-2 py-0.2 rounded-full border border-purple-500/40">
+                    Active
+                  </span>
+                )}
+              </div>
+              <p className={cn('text-[11px] mt-1 leading-relaxed', isLight ? 'text-[#6B7280]' : 'text-gray-400')}>
+                Deep space midnight blue canvas with radiant glowing conduits and neon highlights.
+              </p>
+            </div>
+          </div>
+
+          {/* Option B: Luxury Light */}
+          <div
+            onClick={() => setTheme('light')}
+            className={cn(
+              'p-4 rounded-xl border cursor-pointer transition-all flex items-start gap-3.5',
+              theme === 'light'
+                ? 'border-purple-600 bg-purple-50 shadow-sm ring-1 ring-purple-600'
+                : isLight
+                ? 'bg-[#F9FAFB] border-[#E5E7EB] hover:bg-gray-50'
+                : 'bg-[#0A0D18] border-[#1E2538] hover:bg-[#151B2E]'
+            )}
+          >
+            <div className="w-9 h-9 rounded-xl bg-white border border-[#E5E7EB] text-amber-500 flex items-center justify-center shrink-0 shadow-2xs">
+              <Sun className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className={cn('text-xs font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+                  Luxury Light
+                </span>
+                {theme === 'light' && (
+                  <span className="text-[10px] font-semibold text-purple-700 bg-purple-100 px-2 py-0.2 rounded-full border border-purple-200">
+                    Active
+                  </span>
+                )}
+              </div>
+              <p className={cn('text-[11px] mt-1 leading-relaxed', isLight ? 'text-[#6B7280]' : 'text-gray-400')}>
+                Warm ivory alabaster surfaces, deep ink typography, and restrained violet-emerald accents.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Ollama Inference Configuration */}
+      <div
+        className={cn(
+          'rounded-2xl border p-6 space-y-5 shadow-xs transition-all',
+          isLight ? 'bg-[#FFFFFF] border-[#EAEAE7]' : 'bg-[#121626] border-[#1E2538]'
+        )}
+      >
+        <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-[#1E2538]">
           <div className="flex items-center gap-2.5">
-            <Server className="w-4 h-4 text-purple-400" />
-            <h2 className="text-sm font-semibold text-white">
+            <Server className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <h2 className={cn('text-sm font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
               Local Ollama Inference
             </h2>
           </div>
 
           <div className="flex items-center gap-2">
             <span
-              className={`w-2 h-2 rounded-full ${
-                isModelReady ? 'bg-emerald-400 shadow-[0_0_8px_#34D399]' : 'bg-amber-400'
-              }`}
+              className={cn(
+                'w-2 h-2 rounded-full',
+                isModelReady ? 'bg-emerald-500 shadow-[0_0_8px_#34D399]' : 'bg-amber-400'
+              )}
             />
-            <span className="text-xs font-mono text-gray-300">
+            <span className={cn('text-xs font-mono font-medium', isLight ? 'text-[#374151]' : 'text-gray-300')}>
               {isModelReady ? 'MODEL READY' : 'OFFLINE / PULLING'}
             </span>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
-          <div className="p-3 rounded-lg bg-[#0A0D18] border border-[#1E2538]">
-            <span className="text-gray-400">Target Model</span>
-            <div className="text-white font-bold mt-1 text-sm">{llmStatus?.target_model || 'qwen3.5:4b'}</div>
+          <div
+            className={cn(
+              'p-3.5 rounded-xl border',
+              isLight ? 'bg-[#F9FAFB] border-[#E5E7EB]' : 'bg-[#0A0D18] border-[#1E2538]'
+            )}
+          >
+            <span className={cn('text-[10px] uppercase font-semibold', isLight ? 'text-[#6B7280]' : 'text-gray-400')}>
+              Target Model
+            </span>
+            <div className={cn('font-bold mt-1 text-sm', isLight ? 'text-[#111827]' : 'text-white')}>
+              {llmStatus?.target_model || 'qwen3.5:4b'}
+            </div>
           </div>
-          <div className="p-3 rounded-lg bg-[#0A0D18] border border-[#1E2538]">
-            <span className="text-gray-400">Ollama Host</span>
-            <div className="text-white font-bold mt-1 text-sm">{llmStatus?.base_url || 'http://localhost:11434'}</div>
+
+          <div
+            className={cn(
+              'p-3.5 rounded-xl border',
+              isLight ? 'bg-[#F9FAFB] border-[#E5E7EB]' : 'bg-[#0A0D18] border-[#1E2538]'
+            )}
+          >
+            <span className={cn('text-[10px] uppercase font-semibold', isLight ? 'text-[#6B7280]' : 'text-gray-400')}>
+              Ollama Host
+            </span>
+            <div className={cn('font-bold mt-1 text-sm', isLight ? 'text-[#111827]' : 'text-white')}>
+              {llmStatus?.base_url || 'http://localhost:11434'}
+            </div>
           </div>
-          <div className="p-3 rounded-lg bg-[#0A0D18] border border-[#1E2538]">
-            <span className="text-gray-400">GPU Acceleration</span>
-            <div className="text-cyan-400 font-bold mt-1 text-sm">
+
+          <div
+            className={cn(
+              'p-3.5 rounded-xl border',
+              isLight ? 'bg-[#F9FAFB] border-[#E5E7EB]' : 'bg-[#0A0D18] border-[#1E2538]'
+            )}
+          >
+            <span className={cn('text-[10px] uppercase font-semibold', isLight ? 'text-[#6B7280]' : 'text-gray-400')}>
+              GPU Acceleration
+            </span>
+            <div className="text-cyan-600 dark:text-cyan-400 font-bold mt-1 text-sm">
               {health?.hardware?.gpu_model?.replace('NVIDIA GeForce ', '') || 'RTX 2050'}
             </div>
           </div>
         </div>
 
-        {/* Test Prompt Trigger */}
+        {/* Inference Smoke Test Prompt */}
         <div className="space-y-2 pt-2">
-          <label className="text-xs font-semibold text-white">
+          <label className={cn('text-xs font-bold block', isLight ? 'text-[#374151]' : 'text-white')}>
             Inference Smoke Test Prompt
           </label>
           <div className="flex gap-2">
@@ -125,12 +252,17 @@ export const SettingsPage: React.FC = () => {
               type="text"
               value={testPrompt}
               onChange={(e) => setTestPrompt(e.target.value)}
-              className="flex-1 px-3.5 py-2 rounded-lg bg-[#0A0D18] border border-[#1E2538] text-xs text-white focus:outline-none focus:border-purple-500 font-mono"
+              className={cn(
+                'flex-1 px-3.5 py-2 rounded-xl border text-xs focus:outline-none focus:ring-1 font-mono transition-all',
+                isLight
+                  ? 'bg-[#F9FAFB] border-[#E5E7EB] text-[#111827] focus:border-purple-600'
+                  : 'bg-[#0A0D18] border-[#1E2538] text-white focus:border-purple-500'
+              )}
             />
             <button
               onClick={() => testMutation.mutate()}
               disabled={testMutation.isPending}
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] hover:from-[#8B5CF6] hover:to-[#6366F1] text-white text-xs font-medium shadow-[0_0_15px_rgba(124,58,237,0.4)] flex items-center gap-1.5 transition-all disabled:opacity-50"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-semibold shadow-sm flex items-center gap-1.5 transition-all disabled:opacity-50"
             >
               <Play className="w-3.5 h-3.5 fill-current" />
               <span>{testMutation.isPending ? 'Testing...' : 'Test Model'}</span>
@@ -140,17 +272,22 @@ export const SettingsPage: React.FC = () => {
 
         {testResult && (
           <div
-            className={`p-4 rounded-xl text-xs font-mono leading-relaxed ${
+            className={cn(
+              'p-4 rounded-xl text-xs font-mono leading-relaxed border',
               testResult.success
-                ? 'bg-[#0A0D18] border border-emerald-500/30 text-emerald-300'
-                : 'bg-[#0A0D18] border border-rose-500/30 text-rose-300'
-            }`}
+                ? isLight
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                  : 'bg-[#0A0D18] border-emerald-500/30 text-emerald-300'
+                : isLight
+                ? 'bg-rose-50 border-rose-200 text-rose-800'
+                : 'bg-[#0A0D18] border-rose-500/30 text-rose-300'
+            )}
           >
             {testResult.success ? (
               <div>
-                <span className="font-bold text-emerald-400">Response: </span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">Response: </span>
                 {testResult.data?.response}
-                <div className="text-[10px] text-gray-400 mt-1">
+                <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
                   Latency: {testResult.data?.latency_ms}ms &bull; Model: {testResult.data?.model}
                 </div>
               </div>
@@ -161,26 +298,39 @@ export const SettingsPage: React.FC = () => {
         )}
       </div>
 
-      {/* 3. API Integrations */}
-      <div className="rounded-2xl bg-[#121626] border border-[#1E2538] p-6 shadow-xl space-y-4">
-        <h2 className="text-sm font-semibold text-white pb-3 border-b border-[#1E2538]">
-          External APIs &amp; Telemetry
+      {/* 4. API Integrations */}
+      <div
+        className={cn(
+          'rounded-2xl border p-6 space-y-4 shadow-xs transition-all',
+          isLight ? 'bg-[#FFFFFF] border-[#EAEAE7]' : 'bg-[#121626] border-[#1E2538]'
+        )}
+      >
+        <h2 className={cn('text-sm font-bold pb-3 border-b border-gray-100 dark:border-[#1E2538]', isLight ? 'text-[#111827]' : 'text-white')}>
+          External APIs &amp; Grounding Services
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Tavily Search */}
-          <div className="p-4 rounded-xl bg-[#0A0D18] border border-[#1E2538] space-y-3">
+          <div
+            className={cn(
+              'p-4 rounded-xl border space-y-3',
+              isLight ? 'bg-[#F9FAFB] border-[#E5E7EB]' : 'bg-[#0A0D18] border-[#1E2538]'
+            )}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Globe className="w-4 h-4 text-purple-400" />
-                <span className="text-xs font-semibold text-white">Tavily Web Search</span>
+                <Globe className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <span className={cn('text-xs font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+                  Tavily Web Grounding
+                </span>
               </div>
               <span
-                className={`text-[10px] font-mono px-2 py-0.5 rounded ${
+                className={cn(
+                  'text-[10px] font-mono font-semibold px-2 py-0.5 rounded',
                   integrations?.tavily?.configured
-                    ? 'bg-emerald-500/20 text-emerald-300'
-                    : 'bg-gray-700/40 text-gray-400'
-                }`}
+                    ? 'bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
+                )}
               >
                 {integrations?.tavily?.configured ? 'CONNECTED' : 'STANDBY'}
               </span>
@@ -188,25 +338,38 @@ export const SettingsPage: React.FC = () => {
             <button
               onClick={() => testTavilyMutation.mutate()}
               disabled={testTavilyMutation.isPending}
-              className="w-full py-1.5 rounded-lg border border-[#1E2538] bg-[#121626] hover:bg-[#181D33] text-gray-300 hover:text-white text-xs transition-all font-mono"
+              className={cn(
+                'w-full py-1.5 rounded-lg border text-xs transition-all font-mono',
+                isLight
+                  ? 'border-[#E5E7EB] bg-white text-gray-700 hover:bg-gray-50'
+                  : 'border-[#1E2538] bg-[#121626] text-gray-300 hover:text-white hover:bg-[#181D33]'
+              )}
             >
               {testTavilyMutation.isPending ? 'Verifying...' : 'Test Tavily Connection'}
             </button>
           </div>
 
           {/* LangSmith Tracing */}
-          <div className="p-4 rounded-xl bg-[#0A0D18] border border-[#1E2538] space-y-3">
+          <div
+            className={cn(
+              'p-4 rounded-xl border space-y-3',
+              isLight ? 'bg-[#F9FAFB] border-[#E5E7EB]' : 'bg-[#0A0D18] border-[#1E2538]'
+            )}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Terminal className="w-4 h-4 text-purple-400" />
-                <span className="text-xs font-semibold text-white">LangSmith Tracing</span>
+                <Terminal className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <span className={cn('text-xs font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+                  LangSmith Tracing
+                </span>
               </div>
               <span
-                className={`text-[10px] font-mono px-2 py-0.5 rounded ${
+                className={cn(
+                  'text-[10px] font-mono font-semibold px-2 py-0.5 rounded',
                   integrations?.langsmith?.configured
-                    ? 'bg-emerald-500/20 text-emerald-300'
-                    : 'bg-gray-700/40 text-gray-400'
-                }`}
+                    ? 'bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
+                )}
               >
                 {integrations?.langsmith?.configured ? 'CONNECTED' : 'STANDBY'}
               </span>
@@ -214,7 +377,12 @@ export const SettingsPage: React.FC = () => {
             <button
               onClick={() => testLangSmithMutation.mutate()}
               disabled={testLangSmithMutation.isPending}
-              className="w-full py-1.5 rounded-lg border border-[#1E2538] bg-[#121626] hover:bg-[#181D33] text-gray-300 hover:text-white text-xs transition-all font-mono"
+              className={cn(
+                'w-full py-1.5 rounded-lg border text-xs transition-all font-mono',
+                isLight
+                  ? 'border-[#E5E7EB] bg-white text-gray-700 hover:bg-gray-50'
+                  : 'border-[#1E2538] bg-[#121626] text-gray-300 hover:text-white hover:bg-[#181D33]'
+              )}
             >
               {testLangSmithMutation.isPending ? 'Verifying...' : 'Test LangSmith Connection'}
             </button>

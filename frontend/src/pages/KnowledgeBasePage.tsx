@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
+import { useTheme } from '../lib/theme';
 import { formatBytes } from '../lib/utils';
 import {
   UploadCloud,
@@ -8,11 +9,18 @@ import {
   Trash2,
   AlertCircle,
   Search,
+  CheckCircle2,
+  Database,
+  BookOpen,
 } from 'lucide-react';
+import { cn } from '../lib/utils';
 
 export const KnowledgeBasePage: React.FC = () => {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { theme } = useTheme();
+  const isLight = theme === 'light';
+
   const [dragOver, setDragOver] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -56,19 +64,76 @@ export const KnowledgeBasePage: React.FC = () => {
     doc.filename.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const totalChunks = documents?.reduce((acc, d) => acc + (d.chunk_count || 0), 0) ?? 0;
+  const totalBytes = documents?.reduce((acc, d) => acc + (d.file_size || 0), 0) ?? 0;
+
   return (
-    <div className="p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-6 font-sans">
+    <div
+      className={cn(
+        'p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-6 font-sans transition-colors duration-200',
+        isLight ? 'text-[#111827]' : 'text-[#F1F5F9]'
+      )}
+    >
       {/* 1. Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+        <h1
+          className={cn(
+            'text-2xl sm:text-3xl font-extrabold tracking-tight font-serif',
+            isLight ? 'text-[#111827]' : 'text-white'
+          )}
+        >
           Knowledge Base
         </h1>
-        <p className="text-xs text-gray-400 mt-1">
-          Manage documents and vector embeddings for ChromaDB RAG retrieval.
+        <p className={cn('text-xs sm:text-sm mt-1', isLight ? 'text-[#6B7280]' : 'text-gray-400')}>
+          Your private research library for document-grounded AI analysis.
         </p>
       </div>
 
-      {/* 2. Drag & Drop Upload Zone */}
+      {/* 2. Educational Architecture Strip: 5-Step RAG Pipeline */}
+      <div
+        className={cn(
+          'rounded-2xl border p-5 sm:p-6 shadow-xs space-y-4 transition-all',
+          isLight
+            ? 'bg-[#FFFFFF] border-[#EAEAE7]'
+            : 'bg-[#121626] border-[#1E2538]'
+        )}
+      >
+        <div className="flex items-center gap-2">
+          <BookOpen className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+          <h2 className={cn('text-sm font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+            How Document Grounding Works
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-1">
+          {[
+            { step: '1. Extracted', desc: 'Raw text and page structures parsed via pypdf or text extractors.' },
+            { step: '2. Chunked', desc: 'Normalized into overlapping semantic chunks with page provenance.' },
+            { step: '3. Embedded', desc: 'Vector embeddings generated locally using all-MiniLM dense encoders.' },
+            { step: '4. ChromaDB', desc: 'Indexed into local persistent vector collection with distance metrics.' },
+            { step: '5. Retrieved', desc: 'Semantically queried with a 0.82 distance cutoff during task execution.' },
+          ].map((item, i) => (
+            <div
+              key={i}
+              className={cn(
+                'p-3.5 rounded-xl border text-xs space-y-1 transition-all',
+                isLight
+                  ? 'bg-[#F9FAFB] border-[#E5E7EB]'
+                  : 'bg-[#0A0D18] border-[#1E2538]'
+              )}
+            >
+              <span className="font-bold text-purple-600 dark:text-purple-400 block text-xs">
+                {item.step}
+              </span>
+              <p className={cn('text-[11px] leading-relaxed', isLight ? 'text-[#4B5563]' : 'text-gray-400')}>
+                {item.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. Drag & Drop Upload Zone */}
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -77,86 +142,131 @@ export const KnowledgeBasePage: React.FC = () => {
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all ${
+        className={cn(
+          'rounded-2xl border-2 border-dashed p-8 text-center cursor-pointer transition-all',
           dragOver
-            ? 'border-purple-500 bg-purple-500/10'
+            ? 'border-purple-500 bg-purple-50 dark:bg-purple-500/10'
+            : isLight
+            ? 'border-[#E5E7EB] bg-[#FFFFFF] hover:border-purple-400 hover:bg-gray-50 shadow-xs'
             : 'border-[#1E2538] bg-[#121626] hover:border-purple-500/40 hover:bg-[#151B2E]'
-        }`}
+        )}
       >
         <input
           ref={fileInputRef}
           type="file"
           className="hidden"
-          accept=".pdf,.txt,.md,.json,.csv"
+          accept=".pdf,.txt,.md,.markdown"
           onChange={(e) => handleFileSelect(e.target.files)}
         />
         <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-purple-600/15 border border-purple-500/30 text-purple-400 flex items-center justify-center">
+          <div
+            className={cn(
+              'w-12 h-12 rounded-2xl flex items-center justify-center transition-all',
+              isLight
+                ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                : 'bg-purple-600/15 text-purple-400 border border-purple-500/30'
+            )}
+          >
             <UploadCloud className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-white">
+            <p className={cn('text-sm font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
               {uploadMutation.isPending
-                ? 'Indexing document into ChromaDB...'
+                ? 'Extracting and indexing into ChromaDB...'
                 : 'Click or drag files here to upload'}
             </p>
-            <p className="text-xs text-gray-400 mt-1">
-              Supports PDF, Markdown, TXT, JSON, and CSV for dense retrieval
+            <p className={cn('text-xs mt-1', isLight ? 'text-[#6B7280]' : 'text-gray-400')}>
+              Supported formats: <strong>PDF (.pdf)</strong>, <strong>Plain Text (.txt)</strong>, and <strong>Markdown (.md)</strong>
             </p>
           </div>
         </div>
       </div>
 
       {uploadError && (
-        <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+        <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-600 dark:text-rose-300 text-xs flex items-center gap-2 font-medium">
+          <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
           <span>{uploadError}</span>
         </div>
       )}
 
-      {/* 3. Document Library List */}
-      <div className="rounded-2xl bg-[#121626] border border-[#1E2538] p-5 space-y-4 shadow-md">
-        <div className="flex items-center justify-between pb-3 border-b border-[#1E2538]">
-          <h2 className="text-sm font-semibold text-white">
-            Indexed Documents ({filteredDocs?.length ?? 0})
-          </h2>
+      {/* 4. Document Library List */}
+      <div
+        className={cn(
+          'rounded-2xl border p-5 sm:p-6 space-y-4 shadow-xs transition-all',
+          isLight
+            ? 'bg-[#FFFFFF] border-[#EAEAE7]'
+            : 'bg-[#121626] border-[#1E2538]'
+        )}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-[#1E2538]">
+          <div>
+            <h2 className={cn('text-sm font-bold', isLight ? 'text-[#111827]' : 'text-white')}>
+              Indexed Research Documents ({filteredDocs?.length ?? 0})
+            </h2>
+            <p className={cn('text-[11px] mt-0.5', isLight ? 'text-[#6B7280]' : 'text-gray-400')}>
+              {totalChunks} total chunks indexed &bull; {formatBytes(totalBytes)} stored
+            </p>
+          </div>
 
-          <div className="relative w-64">
+          <div className="relative w-full sm:w-64">
             <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search documents..."
+              placeholder="Search indexed files..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#0A0D18] text-white text-xs pl-8 pr-3 py-1.5 rounded-lg border border-[#1E2538] focus:outline-none focus:border-purple-500"
+              className={cn(
+                'w-full text-xs pl-8 pr-3 py-1.5 rounded-xl border focus:outline-none focus:ring-1 transition-all',
+                isLight
+                  ? 'bg-[#F9FAFB] border-[#E5E7EB] text-[#111827] focus:border-purple-600 focus:ring-purple-600'
+                  : 'bg-[#0A0D18] border-[#1E2538] text-white focus:border-purple-500 focus:ring-purple-500'
+              )}
             />
           </div>
         </div>
 
-        <div className="divide-y divide-[#1E2538]/50">
+        <div className="divide-y divide-gray-100 dark:divide-[#1E2538]/50">
           {filteredDocs && filteredDocs.length > 0 ? (
             filteredDocs.map((doc) => (
               <div
                 key={doc.id}
-                className="py-3 flex items-center justify-between gap-4 hover:bg-[#181D33]/40 px-2 rounded-lg transition-colors"
+                className={cn(
+                  'py-3.5 flex items-center justify-between gap-4 px-2 rounded-xl transition-colors',
+                  isLight ? 'hover:bg-gray-50' : 'hover:bg-[#181D33]/40'
+                )}
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <FileText className="w-4 h-4 text-purple-400 shrink-0" />
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div
+                    className={cn(
+                      'w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border',
+                      isLight
+                        ? 'bg-purple-50 border-purple-100 text-purple-700'
+                        : 'bg-purple-500/10 border-purple-500/20 text-purple-400'
+                    )}
+                  >
+                    <FileText className="w-4 h-4" />
+                  </div>
+
                   <div className="min-w-0">
-                    <p className="text-xs font-medium text-white truncate">
+                    <p className={cn('text-xs font-bold truncate', isLight ? 'text-[#111827]' : 'text-white')}>
                       {doc.filename}
                     </p>
-                    <p className="text-[10px] text-gray-400 mt-0.5">
-                      {formatBytes(doc.file_size)} &bull; {doc.chunk_count} chunks indexed
+                    <p className={cn('text-[11px] mt-0.5', isLight ? 'text-[#6B7280]' : 'text-gray-400')}>
+                      {formatBytes(doc.file_size)} &bull; {doc.chunk_count} semantic chunks &bull; ChromaDB active
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Indexed
+                  </span>
+
                   <button
                     onClick={() => deleteMutation.mutate(doc.id)}
-                    className="p-1.5 rounded text-gray-400 hover:text-rose-400 transition-colors"
-                    title="Delete document"
+                    className="p-1.5 rounded-lg text-gray-400 hover:text-rose-500 transition-colors"
+                    title="Delete document and un-index chunks"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -164,8 +274,12 @@ export const KnowledgeBasePage: React.FC = () => {
               </div>
             ))
           ) : (
-            <div className="py-8 text-center text-xs text-gray-400">
-              No documents found. Upload files to populate the vector store.
+            <div className="py-12 text-center text-xs text-gray-400 space-y-2">
+              <Database className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto" />
+              <p className="font-medium">No documents in the knowledge base.</p>
+              <p className="text-[11px] text-gray-500">
+                Upload research papers, technical specs, or notes to ground your agents with verified citations.
+              </p>
             </div>
           )}
         </div>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from './lib/theme';
 import { AppLayout } from './components/layout/AppLayout';
 import { DashboardPage } from './pages/DashboardPage';
 import { NewTaskPage } from './pages/NewTaskPage';
@@ -22,20 +23,22 @@ const queryClient = new QueryClient({
 export const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<AppLayout />}>
-            <Route index element={<DashboardPage />} />
-            <Route path="new-task" element={<NewTaskPage />} />
-            <Route path="agents" element={<AgentWorkspacePage />} />
-            <Route path="knowledge" element={<KnowledgeBasePage />} />
-            <Route path="reports" element={<ReportsPage />} />
-            <Route path="approvals" element={<ApprovalsPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <ThemeProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<AppLayout />}>
+              <Route index element={<DashboardPage />} />
+              <Route path="new-task" element={<NewTaskPage />} />
+              <Route path="agents" element={<AgentWorkspacePage />} />
+              <Route path="knowledge" element={<KnowledgeBasePage />} />
+              <Route path="reports" element={<ReportsPage />} />
+              <Route path="approvals" element={<ApprovalsPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };
