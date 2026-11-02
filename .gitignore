@@ -44,6 +44,8 @@ data/chroma/*
 *.env
 backend/.env
 backend/.env.*
+!.env.example
+!backend/.env.example
 
 # Node & Frontend
 node_modules/

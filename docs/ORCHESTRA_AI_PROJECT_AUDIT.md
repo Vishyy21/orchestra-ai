@@ -558,7 +558,7 @@ ollama run qwen3.5:4b
 ```
 
 ### 2. Backend Startup
-In your project root directory (`c:\Users\vishe\OneDrive\New folder\Orchestra AI`):
+In your project root directory:
 ```powershell
 # Activate the Python virtual environment
 .\.venv\Scripts\Activate.ps1
