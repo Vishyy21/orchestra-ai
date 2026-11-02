@@ -9,8 +9,10 @@ from app.api.documents import router as documents_router
 from app.api.approvals import router as approvals_router
 from app.api.dashboard import router as dashboard_router
 from app.api.integrations import router as integrations_router
+from app.api.auth import router as auth_router
 
 __all__ = [
+    "auth_router",
     "health_router",
     "llm_router",
     "tasks_router",

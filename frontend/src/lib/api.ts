@@ -13,19 +13,60 @@ import type {
 } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const AUTH_TOKEN_KEY = 'orchestra_session_token';
+
+export function getAuthToken(): string | null {
+  try {
+    return localStorage.getItem(AUTH_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setAuthToken(token: string): void {
+  try {
+    localStorage.setItem(AUTH_TOKEN_KEY, token);
+  } catch {
+    // Ignore storage errors in restricted contexts
+  }
+}
+
+export function clearAuthToken(): void {
+  try {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+  } catch {
+    // Ignore
+  }
+}
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE}${endpoint}`;
   const headers = new Headers(options.headers || {});
 
+  // 1. Dual-layer authentication: Attach fallback Bearer header if token exists
+  const token = getAuthToken();
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
   if (!(options.body instanceof FormData) && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
 
+  // 2. Transmit HttpOnly cross-origin cookies
   const response = await fetch(url, {
     ...options,
     headers,
+    credentials: 'include',
   });
+
+  // 3. Handle 401 Unauthorized globally
+  if (response.status === 401) {
+    clearAuthToken();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('orchestra:unauthorized'));
+    }
+  }
 
   if (!response.ok) {
     let errorDetail = `HTTP ${response.status}: ${response.statusText}`;
@@ -175,5 +216,37 @@ export const api = {
     }>(`/api/integrations/test/langsmith${qs}`, {
       method: 'POST',
     });
+  },
+
+  // Authentication & Security
+  getAuthStatus: () =>
+    request<{
+      auth_enabled: boolean;
+      authenticated: boolean;
+      expires_at?: number;
+    }>('/api/auth/status'),
+  login: async (password: string) => {
+    const res = await request<{
+      success: boolean;
+      message: string;
+      expires_at?: number;
+      token?: string;
+    }>('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    });
+    if (res.token) {
+      setAuthToken(res.token);
+    }
+    return res;
+  },
+  logout: async () => {
+    try {
+      await request<{ success: boolean; message: string }>('/api/auth/logout', {
+        method: 'POST',
+      });
+    } finally {
+      clearAuthToken();
+    }
   },
 };

@@ -6,13 +6,14 @@ Tagline: "Intelligence in Sync. Execution in Motion."
 
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import settings
 from app.database.session import init_db
 from app.api import (
+    auth_router,
     health_router,
     llm_router,
     tasks_router,
@@ -23,6 +24,7 @@ from app.api import (
     dashboard_router,
     integrations_router,
 )
+from app.api.dependencies import verify_authenticated
 from app.services.observability import init_tracing
 
 # Configure logging
@@ -37,6 +39,7 @@ logger = logging.getLogger("orchestra.main")
 async def lifespan(app: FastAPI):
     """Lifespan context manager for database initialization and directory verification."""
     logger.info("Initializing ORCHESTRA AI infrastructure...")
+    settings.validate_auth()
     settings.ensure_directories()
     init_db()
     init_tracing()
@@ -59,13 +62,18 @@ app = FastAPI(
 )
 
 # Configure CORS
-origins = [
-    settings.frontend_origin,
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+origins = list(
+    dict.fromkeys(
+        [
+            settings.frontend_origin,
+            "https://orchestra-ai-eo1f.vercel.app",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+        ]
+    )
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -90,16 +98,19 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-# Include modular API routers
-app.include_router(health_router, prefix="/api")
-app.include_router(llm_router, prefix="/api")
-app.include_router(tasks_router, prefix="/api")
-app.include_router(agents_router, prefix="/api")
-app.include_router(reports_router, prefix="/api")
-app.include_router(documents_router, prefix="/api")
-app.include_router(approvals_router, prefix="/api")
-app.include_router(dashboard_router, prefix="/api")
-app.include_router(integrations_router, prefix="/api")
+# Public Authentication Router
+app.include_router(auth_router, prefix="/api")
+
+# Protected Modular API Routers
+app.include_router(health_router, prefix="/api", dependencies=[Depends(verify_authenticated)])
+app.include_router(llm_router, prefix="/api", dependencies=[Depends(verify_authenticated)])
+app.include_router(tasks_router, prefix="/api", dependencies=[Depends(verify_authenticated)])
+app.include_router(agents_router, prefix="/api", dependencies=[Depends(verify_authenticated)])
+app.include_router(reports_router, prefix="/api", dependencies=[Depends(verify_authenticated)])
+app.include_router(documents_router, prefix="/api", dependencies=[Depends(verify_authenticated)])
+app.include_router(approvals_router, prefix="/api", dependencies=[Depends(verify_authenticated)])
+app.include_router(dashboard_router, prefix="/api", dependencies=[Depends(verify_authenticated)])
+app.include_router(integrations_router, prefix="/api", dependencies=[Depends(verify_authenticated)])
 
 
 @app.get("/", tags=["Root"])

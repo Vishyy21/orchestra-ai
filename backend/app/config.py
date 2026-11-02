@@ -50,6 +50,14 @@ class Settings(BaseSettings):
     langchain_project: str | None = None
     langchain_endpoint: str | None = None
 
+    # Single-Operator Authentication & Session Security
+    auth_enabled: bool = False
+    auth_password: str | None = None
+    auth_secret_key: str | None = None
+    auth_token_expire_hours: int = 12
+    auth_cookie_name: str = "orchestra_session"
+    auth_cookie_secure: bool | None = None
+
     model_config = SettingsConfigDict(
         env_file=(
             Path(__file__).resolve().parent.parent / ".env",
@@ -96,6 +104,23 @@ class Settings(BaseSettings):
                 os.environ["LANGSMITH_ENDPOINT"] = self.langsmith_endpoint
         if self.tavily_api_key:
             os.environ["TAVILY_API_KEY"] = self.tavily_api_key
+
+    def validate_auth(self) -> None:
+        """Validate authentication configuration when auth is enabled.
+        
+        Enforces safe failure if AUTH_ENABLED=true but AUTH_PASSWORD or AUTH_SECRET_KEY is missing.
+        """
+        if self.auth_enabled:
+            if not self.auth_password or not self.auth_password.strip():
+                raise RuntimeError(
+                    "ORCHESTRA AI Security Configuration Error: AUTH_ENABLED is True, but AUTH_PASSWORD is missing or empty. "
+                    "Please configure a strong AUTH_PASSWORD in backend/.env before running in authenticated mode."
+                )
+            if not self.auth_secret_key or not self.auth_secret_key.strip():
+                raise RuntimeError(
+                    "ORCHESTRA AI Security Configuration Error: AUTH_ENABLED is True, but AUTH_SECRET_KEY is missing or empty. "
+                    "Please configure a random AUTH_SECRET_KEY in backend/.env before running in authenticated mode."
+                )
 
     def ensure_directories(self) -> None:
         """Ensure necessary storage directories exist."""
